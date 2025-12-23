@@ -124,8 +124,8 @@ namespace OverlayPlayer
             {
                 var openFileDialog = new Microsoft.Win32.OpenFileDialog
                 {
-                    Title = "Video veya GIF Seç",
-                    Filter = "Medya Dosyaları|*.mp4;*.gif;*.avi;*.mov;*.wmv|Tüm Dosyalar|*.*"
+                    Title = "Medya Seç (Video, GIF veya Resim)",
+                    Filter = "Tüm Medya Dosyaları|*.mp4;*.gif;*.png;*.jpg;*.jpeg;*.bmp;*.avi;*.mov;*.wmv|Videolar|*.mp4;*.avi;*.mov;*.wmv|Resimler & GIFler|*.gif;*.png;*.jpg;*.jpeg;*.bmp|Tüm Dosyalar|*.*"
                 };
 
                 if (openFileDialog.ShowDialog() == true)
@@ -148,12 +148,21 @@ namespace OverlayPlayer
             try
             {
                 string extension = Path.GetExtension(path).ToLower();
+                string[] imageExtensions = { ".png", ".jpg", ".jpeg", ".bmp" };
+
                 if (extension == ".gif")
                 {
                     MainVideo.Visibility = Visibility.Collapsed;
                     MainGif.Visibility = Visibility.Visible;
                     var image = new System.Windows.Media.Imaging.BitmapImage(new Uri(path));
                     WpfAnimatedGif.ImageBehavior.SetAnimatedSource(MainGif, image);
+                }
+                else if (Array.Exists(imageExtensions, e => e == extension))
+                {
+                    MainVideo.Visibility = Visibility.Collapsed;
+                    MainGif.Visibility = Visibility.Visible;
+                    WpfAnimatedGif.ImageBehavior.SetAnimatedSource(MainGif, null); // Eski GIF varsa temizle
+                    MainGif.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(path));
                 }
                 else
                 {

@@ -8,7 +8,7 @@ OverlayPlayer, masaüstünüzün en önünde (Topmost), şeffaf ve tıklamayı e
 -   **Şeffaflık & Borderless:** Çerçevesizdir ve arka planı tamamen şeffaftır.
 -   **Tıklama Geçirme (Click-through):** Animasyonun altındaki pencerelere tıklayabilirsiniz; sanki orada değilmiş gibi davranır.
 -   **Otomatik Yerleşim:** Başladığında otomatik olarak ekranın sol alt köşesine yerleşir.
--   **Geniş Format Desteği:** `.gif`, `.mp4`, `.avi`, `.mov`, `.wmv` dosyalarını destekler.
+-   **Geniş Format Desteği:** `.gif`, `.png`, `.jpg`, `.jpeg`, `.bmp`, `.mp4`, `.avi`, `.mov`, `.wmv` dosyalarını destekler.
 -   **Sistem Tepsisi (Tray) Kontrolü:** Uygulamayı sistem tepsisinden yönetebilir, medyanızı değiştirebilir veya durdurabilirsiniz.
 
 ## 🚀 Kurulum & Çalıştırma
