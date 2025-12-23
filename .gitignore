@@ -1,0 +1,19 @@
+# .NET
+bin/
+obj/
+[Log,log,LOG]s/
+
+# Visual Studio
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+
+# Publish output
+Publish/
+SetupOutput/
+OverlayEXE/
+
+# OS files
+Thumbs.db
+Desktop.ini
