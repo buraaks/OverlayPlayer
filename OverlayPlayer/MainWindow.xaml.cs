@@ -23,6 +23,11 @@ namespace OverlayPlayer
             try
             {
                 _settings = AppSettings.Load();
+                
+                // İlk kurulumda dili Registry'den çek (Installer'ın yazdığı yer)
+                CheckInitialLanguage();
+
+                LocalizationService.SetLanguage(_settings.Language);
                 InitializeComponent();
                 ApplySettings();
                 this.Loaded += MainWindow_Loaded;
@@ -30,8 +35,40 @@ namespace OverlayPlayer
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Initialization error: " + ex.Message);
+                MessageBox.Show(LocalizationService.Get("InitError") + ex.Message);
             }
+        }
+
+
+        private void CheckInitialLanguage()
+        {
+            try
+            {
+                // Eğer daha önce kaydedilmiş bir dil yoksa veya ilk çalışmaysa Registry'e bak
+                using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\OverlayPlayer", false))
+                {
+                    if (key != null)
+                    {
+                        var lang = key.GetValue("Language")?.ToString();
+                        if (!string.IsNullOrEmpty(lang))
+                        {
+                            _settings.Language = lang switch
+                            {
+                                "Turkish" => "tr",
+                                _ => "en"
+                            };
+                            _settings.Save();
+                            
+                            // Tek seferlik oku, sonra Registry'den silelim/güncelleyelim ki settings baskın kalsın
+                            using (var writeKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\OverlayPlayer", true))
+                            {
+                                writeKey?.DeleteValue("Language", false);
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
         }
 
         private void ApplySettings()
@@ -39,10 +76,28 @@ namespace OverlayPlayer
             this.Opacity = _settings.Opacity;
             this.Width = _settings.WindowSize;
             this.Height = _settings.WindowSize;
+            ApplyRotation();
+        }
+
+        private void ApplyRotation()
+        {
+            if (VideoRotation != null)
+            {
+                VideoRotation.Angle = _settings.RotationAngle;
+            }
+            if (GifRotation != null)
+            {
+                GifRotation.Angle = _settings.RotationAngle;
+            }
         }
 
         private void SetupTrayIcon()
         {
+            if (_notifyIcon != null)
+            {
+                _notifyIcon.Dispose();
+            }
+
             _notifyIcon = new NotifyIcon();
             
             try
@@ -85,12 +140,12 @@ namespace OverlayPlayer
             var contextMenu = new ContextMenuStrip();
             
             // Change Media
-            contextMenu.Items.Add("Change Media", null, (s, e) => SelectAndLoadFile());
+            contextMenu.Items.Add(LocalizationService.Get("ChangeMedia"), null, (s, e) => SelectAndLoadFile());
             
             contextMenu.Items.Add(new ToolStripSeparator());
 
             // Opacity Menu
-            var opacityMenu = new ToolStripMenuItem("Opacity");
+            var opacityMenu = new ToolStripMenuItem(LocalizationService.Get("Opacity"));
             AddOpacityOption(opacityMenu, "20%", 0.2);
             AddOpacityOption(opacityMenu, "40%", 0.4);
             AddOpacityOption(opacityMenu, "60%", 0.6);
@@ -99,33 +154,50 @@ namespace OverlayPlayer
             contextMenu.Items.Add(opacityMenu);
 
             // Size Menu
-            var sizeMenu = new ToolStripMenuItem("Size");
-            AddSizeOption(sizeMenu, "Small (200x200)", 200);
-            AddSizeOption(sizeMenu, "Medium (300x300)", 300);
-            AddSizeOption(sizeMenu, "Large (400x400)", 400);
-            AddSizeOption(sizeMenu, "Huge (600x600)", 600);
+            var sizeMenu = new ToolStripMenuItem(LocalizationService.Get("Size"));
+            AddSizeOption(sizeMenu, LocalizationService.Get("Small"), 200);
+            AddSizeOption(sizeMenu, LocalizationService.Get("Medium"), 300);
+            AddSizeOption(sizeMenu, LocalizationService.Get("Large"), 400);
+            AddSizeOption(sizeMenu, LocalizationService.Get("Huge"), 600);
             contextMenu.Items.Add(sizeMenu);
+
+            // Rotate 90 Button
+            contextMenu.Items.Add(LocalizationService.Get("Rotate90"), null, (s, e) => {
+                _settings.RotationAngle = (_settings.RotationAngle + 90) % 360;
+                _settings.Save();
+                ApplyRotation();
+            });
+
+            contextMenu.Items.Add(new ToolStripSeparator());
+
+            // Language Menu
+            var langMenu = new ToolStripMenuItem(LocalizationService.Get("Language"));
+            AddLanguageOption(langMenu, "English", "en");
+            AddLanguageOption(langMenu, "Türkçe", "tr");
+            contextMenu.Items.Add(langMenu);
 
             contextMenu.Items.Add(new ToolStripSeparator());
 
             // Interactive Mode
-            _interactiveMenuItem = new ToolStripMenuItem("Change Position (Unlock)", null, OnInteractiveToggled);
+
+            _interactiveMenuItem = new ToolStripMenuItem(LocalizationService.Get("Unlock"), null, OnInteractiveToggled);
             _interactiveMenuItem.Checked = _settings.IsInteractive;
             contextMenu.Items.Add(_interactiveMenuItem);
 
             // Run at Startup
-            _autoStartMenuItem = new ToolStripMenuItem("Run at Startup", null, OnAutoStartToggled);
+            _autoStartMenuItem = new ToolStripMenuItem(LocalizationService.Get("RunAtStartup"), null, OnAutoStartToggled);
             _autoStartMenuItem.Checked = WindowHelper.IsAutoStartEnabled();
             contextMenu.Items.Add(_autoStartMenuItem);
 
             contextMenu.Items.Add(new ToolStripSeparator());
 
+
             // Stop / Start
-            _stopStartMenuItem = new ToolStripMenuItem("Stop", null, OnStopStartClicked);
+            _stopStartMenuItem = new ToolStripMenuItem(_settings.Language == "tr" ? "Durdur" : "Stop", null, OnStopStartClicked);
             contextMenu.Items.Add(_stopStartMenuItem);
 
             // Exit
-            contextMenu.Items.Add("Exit", null, (s, e) => ExitApplication());
+            contextMenu.Items.Add(LocalizationService.Get("Exit"), null, (s, e) => ExitApplication());
 
             _notifyIcon.ContextMenuStrip = contextMenu;
         }
@@ -154,6 +226,18 @@ namespace OverlayPlayer
             parent.DropDownItems.Add(item);
         }
 
+        private void AddLanguageOption(ToolStripMenuItem parent, string text, string langCode)
+        {
+            var item = new ToolStripMenuItem(text, null, (s, e) => {
+                _settings.Language = langCode;
+                _settings.Save();
+                LocalizationService.SetLanguage(langCode);
+                SetupTrayIcon(); // Re-setup tray menu to refresh translations
+            });
+            item.Checked = _settings.Language == langCode;
+            parent.DropDownItems.Add(item);
+        }
+
         private void OnInteractiveToggled(object? sender, EventArgs e)
         {
             _settings.IsInteractive = !_settings.IsInteractive;
@@ -162,7 +246,7 @@ namespace OverlayPlayer
             _settings.Save();
 
             if (_settings.IsInteractive)
-                MessageBox.Show("Edit mode is active! You can drag the media with your mouse. Don't forget to lock it again when you're done.");
+                MessageBox.Show(LocalizationService.Get("EditModeActive"));
         }
 
         private void OnAutoStartToggled(object? sender, EventArgs e)
@@ -177,12 +261,12 @@ namespace OverlayPlayer
             if (this.Visibility == Visibility.Visible)
             {
                 this.Hide();
-                _stopStartMenuItem.Text = "Start";
+                _stopStartMenuItem.Text = LocalizationService.Get("Start");
             }
             else
             {
                 this.Show();
-                _stopStartMenuItem.Text = "Stop";
+                _stopStartMenuItem.Text = LocalizationService.Get("Stop");
             }
         }
 
@@ -229,8 +313,8 @@ namespace OverlayPlayer
             {
                 var openFileDialog = new Microsoft.Win32.OpenFileDialog
                 {
-                    Title = "Select Media (Video, GIF or Image)",
-                    Filter = "All Media Files|*.mp4;*.gif;*.png;*.jpg;*.jpeg;*.bmp;*.avi;*.mov;*.wmv|Videos|*.mp4;*.avi;*.mov;*.wmv|Images & GIFs|*.gif;*.png;*.jpg;*.jpeg;*.bmp|All Files|*.*"
+                    Title = LocalizationService.Get("SelectMediaTitle"),
+                    Filter = $"{LocalizationService.Get("AllMediaFiles")}|*.mp4;*.gif;*.png;*.jpg;*.jpeg;*.bmp;*.avi;*.mov;*.wmv|Videos|*.mp4;*.avi;*.mov;*.wmv|Images & GIFs|*.gif;*.png;*.jpg;*.jpeg;*.bmp|All Files|*.*"
                 };
 
                 if (openFileDialog.ShowDialog() == true)
@@ -239,7 +323,7 @@ namespace OverlayPlayer
                     _settings.Save();
                     LoadMedia(_settings.LastFilePath);
                     this.Show();
-                    _stopStartMenuItem.Text = "Stop";
+                    _stopStartMenuItem.Text = LocalizationService.Get("Stop");
                 }
                 else if (string.IsNullOrEmpty(_settings.LastFilePath))
                 {
@@ -278,8 +362,9 @@ namespace OverlayPlayer
                     MainVideo.Play();
                 }
             }
-            catch (Exception ex) { MessageBox.Show("Media loading error: " + ex.Message); }
+            catch (Exception ex) { MessageBox.Show(LocalizationService.Get("MediaLoadError") + ex.Message); }
         }
+
 
 
         private void MainVideo_MediaEnded(object sender, RoutedEventArgs e)

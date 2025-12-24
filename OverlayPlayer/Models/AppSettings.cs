@@ -11,6 +11,8 @@ namespace OverlayPlayer.Models
         public double WindowSize { get; set; } = 300;
         public bool IsInteractive { get; set; } = false;
         public bool AutoStart { get; set; } = false;
+        public string Language { get; set; } = "en";
+        public double RotationAngle { get; set; } = 0;
 
         private static readonly string SettingsPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),

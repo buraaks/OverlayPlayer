@@ -19,11 +19,21 @@
                       UnloadedBehavior="Stop" 
                       Stretch="Uniform"
                       MediaEnded="MainVideo_MediaEnded"
-                      Visibility="Visible"/>
+                      Visibility="Visible"
+                      RenderTransformOrigin="0.5,0.5">
+            <MediaElement.RenderTransform>
+                <RotateTransform x:Name="VideoRotation" Angle="0" />
+            </MediaElement.RenderTransform>
+        </MediaElement>
 
         <!-- GIF Oynatıcı (Source kod tarafında atanacak) -->
         <Image Name="MainGif"
                Stretch="Uniform"
-               Visibility="Collapsed"/>
+               Visibility="Collapsed"
+               RenderTransformOrigin="0.5,0.5">
+            <Image.RenderTransform>
+                <RotateTransform x:Name="GifRotation" Angle="0" />
+            </Image.RenderTransform>
+        </Image>
     </Grid>
 </Window>

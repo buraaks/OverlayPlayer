@@ -18,7 +18,11 @@ WizardStyle=modern
 PrivilegesRequired=lowest
 
 [Languages]
+Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "turkish"; MessagesFile: "compiler:Languages\Turkish.isl"
+
+[Registry]
+Root: HKCU; Subkey: "Software\OverlayPlayer"; ValueType: string; ValueName: "Language"; ValueData: "{language}"; Flags: uninsdeletekey
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
