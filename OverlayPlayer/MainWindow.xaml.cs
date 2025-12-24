@@ -30,7 +30,7 @@ namespace OverlayPlayer
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Başlatma hatası: " + ex.Message);
+                MessageBox.Show("Initialization error: " + ex.Message);
             }
         }
 
@@ -84,48 +84,48 @@ namespace OverlayPlayer
 
             var contextMenu = new ContextMenuStrip();
             
-            // Medya Değiştir
-            contextMenu.Items.Add("Medyayı Değiştir", null, (s, e) => SelectAndLoadFile());
+            // Change Media
+            contextMenu.Items.Add("Change Media", null, (s, e) => SelectAndLoadFile());
             
             contextMenu.Items.Add(new ToolStripSeparator());
 
-            // Saydamlık Menüsü
-            var opacityMenu = new ToolStripMenuItem("Saydamlık");
-            AddOpacityOption(opacityMenu, "%20", 0.2);
-            AddOpacityOption(opacityMenu, "%40", 0.4);
-            AddOpacityOption(opacityMenu, "%60", 0.6);
-            AddOpacityOption(opacityMenu, "%80", 0.8);
-            AddOpacityOption(opacityMenu, "%100", 1.0);
+            // Opacity Menu
+            var opacityMenu = new ToolStripMenuItem("Opacity");
+            AddOpacityOption(opacityMenu, "20%", 0.2);
+            AddOpacityOption(opacityMenu, "40%", 0.4);
+            AddOpacityOption(opacityMenu, "60%", 0.6);
+            AddOpacityOption(opacityMenu, "80%", 0.8);
+            AddOpacityOption(opacityMenu, "100%", 1.0);
             contextMenu.Items.Add(opacityMenu);
 
-            // Boyut Menüsü
-            var sizeMenu = new ToolStripMenuItem("Boyut");
-            AddSizeOption(sizeMenu, "Küçük (200x200)", 200);
-            AddSizeOption(sizeMenu, "Orta (300x300)", 300);
-            AddSizeOption(sizeMenu, "Büyük (400x400)", 400);
-            AddSizeOption(sizeMenu, "Dev (600x600)", 600);
+            // Size Menu
+            var sizeMenu = new ToolStripMenuItem("Size");
+            AddSizeOption(sizeMenu, "Small (200x200)", 200);
+            AddSizeOption(sizeMenu, "Medium (300x300)", 300);
+            AddSizeOption(sizeMenu, "Large (400x400)", 400);
+            AddSizeOption(sizeMenu, "Huge (600x600)", 600);
             contextMenu.Items.Add(sizeMenu);
 
             contextMenu.Items.Add(new ToolStripSeparator());
 
-            // İnteraktif Mod
-            _interactiveMenuItem = new ToolStripMenuItem("Konum Değiştir (Kilit Aç)", null, OnInteractiveToggled);
+            // Interactive Mode
+            _interactiveMenuItem = new ToolStripMenuItem("Change Position (Unlock)", null, OnInteractiveToggled);
             _interactiveMenuItem.Checked = _settings.IsInteractive;
             contextMenu.Items.Add(_interactiveMenuItem);
 
-            // Başlangıçta Çalıştır
-            _autoStartMenuItem = new ToolStripMenuItem("Başlangıçta Çalıştır", null, OnAutoStartToggled);
+            // Run at Startup
+            _autoStartMenuItem = new ToolStripMenuItem("Run at Startup", null, OnAutoStartToggled);
             _autoStartMenuItem.Checked = WindowHelper.IsAutoStartEnabled();
             contextMenu.Items.Add(_autoStartMenuItem);
 
             contextMenu.Items.Add(new ToolStripSeparator());
 
-            // Durdur / Başlat
-            _stopStartMenuItem = new ToolStripMenuItem("Durdur", null, OnStopStartClicked);
+            // Stop / Start
+            _stopStartMenuItem = new ToolStripMenuItem("Stop", null, OnStopStartClicked);
             contextMenu.Items.Add(_stopStartMenuItem);
 
-            // Kapat
-            contextMenu.Items.Add("Kapat", null, (s, e) => ExitApplication());
+            // Exit
+            contextMenu.Items.Add("Exit", null, (s, e) => ExitApplication());
 
             _notifyIcon.ContextMenuStrip = contextMenu;
         }
@@ -147,7 +147,7 @@ namespace OverlayPlayer
                 _settings.WindowSize = value;
                 this.Width = value;
                 this.Height = value;
-                PositionWindow(); // Boyut değişince köşeye tekrar oturt
+                PositionWindow(); 
                 _settings.Save();
             });
             item.Checked = Math.Abs(_settings.WindowSize - value) < 0.1;
@@ -162,7 +162,7 @@ namespace OverlayPlayer
             _settings.Save();
 
             if (_settings.IsInteractive)
-                MessageBox.Show("Düzenleme modu aktif! Medyayı farenizle sürükleyebilirsiniz. İşiniz bitince kilidi tekrar kapatmayı unutmayın.");
+                MessageBox.Show("Edit mode is active! You can drag the media with your mouse. Don't forget to lock it again when you're done.");
         }
 
         private void OnAutoStartToggled(object? sender, EventArgs e)
@@ -177,12 +177,12 @@ namespace OverlayPlayer
             if (this.Visibility == Visibility.Visible)
             {
                 this.Hide();
-                _stopStartMenuItem.Text = "Başlat";
+                _stopStartMenuItem.Text = "Start";
             }
             else
             {
                 this.Show();
-                _stopStartMenuItem.Text = "Durdur";
+                _stopStartMenuItem.Text = "Stop";
             }
         }
 
@@ -229,8 +229,8 @@ namespace OverlayPlayer
             {
                 var openFileDialog = new Microsoft.Win32.OpenFileDialog
                 {
-                    Title = "Medya Seç (Video, GIF veya Resim)",
-                    Filter = "Tüm Medya Dosyaları|*.mp4;*.gif;*.png;*.jpg;*.jpeg;*.bmp;*.avi;*.mov;*.wmv|Videolar|*.mp4;*.avi;*.mov;*.wmv|Resimler & GIFler|*.gif;*.png;*.jpg;*.jpeg;*.bmp|Tüm Dosyalar|*.*"
+                    Title = "Select Media (Video, GIF or Image)",
+                    Filter = "All Media Files|*.mp4;*.gif;*.png;*.jpg;*.jpeg;*.bmp;*.avi;*.mov;*.wmv|Videos|*.mp4;*.avi;*.mov;*.wmv|Images & GIFs|*.gif;*.png;*.jpg;*.jpeg;*.bmp|All Files|*.*"
                 };
 
                 if (openFileDialog.ShowDialog() == true)
@@ -239,7 +239,7 @@ namespace OverlayPlayer
                     _settings.Save();
                     LoadMedia(_settings.LastFilePath);
                     this.Show();
-                    _stopStartMenuItem.Text = "Durdur";
+                    _stopStartMenuItem.Text = "Stop";
                 }
                 else if (string.IsNullOrEmpty(_settings.LastFilePath))
                 {
@@ -278,8 +278,9 @@ namespace OverlayPlayer
                     MainVideo.Play();
                 }
             }
-            catch (Exception ex) { MessageBox.Show("Medya yükleme hatası: " + ex.Message); }
+            catch (Exception ex) { MessageBox.Show("Media loading error: " + ex.Message); }
         }
+
 
         private void MainVideo_MediaEnded(object sender, RoutedEventArgs e)
         {

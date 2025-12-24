@@ -1,37 +1,40 @@
 # 🎬 OverlayPlayer
 
-OverlayPlayer, masaüstünüzün en önünde (Topmost), şeffaf ve tıklamayı engelleyen (Click-through) bir medya oynatıcıdır. GIF ve Video dosyalarını destekler. Özellikle yayıncılar, ekranında sürekli hareketli bir şeyler görmek isteyenler veya masaüstüne şık bir animasyon eklemek isteyenler için tasarlanmıştır.
+OverlayPlayer is a transparent, borderless, and click-through media player that stays on top of your desktop. It supports GIF and Video files, perfect for streamers or anyone who wants stylish animations on their desktop.
 
-## ✨ Özellikler
+## ✨ Features
 
--   **Her Zaman Üstte:** Diğer pencerelerin üzerinde kalır.
--   **Şeffaflık & Borderless:** Çerçevesizdir ve arka planı tamamen şeffaftır.
--   **Tıklama Geçirme (Click-through):** Animasyonun altındaki pencerelere tıklayabilirsiniz; sanki orada değilmiş gibi davranır.
--   **Otomatik Yerleşim:** Başladığında otomatik olarak ekranın sol alt köşesine yerleşir.
--   **Geniş Format Desteği:** `.gif`, `.png`, `.jpg`, `.jpeg`, `.bmp`, `.mp4`, `.avi`, `.mov`, `.wmv` dosyalarını destekler.
--   **Sistem Tepsisi (Tray) Kontrolü:** Uygulamayı sistem tepsisinden yönetebilir, medyanızı değiştirebilir veya durdurabilirsiniz.
+-   **Always on Top:** Stays above other windows.
+-   **Transparency & Borderless:** No frames and a fully transparent background.
+-   **Click-Through:** Interaction passes through the animation as if it's not there.
+-   **Auto-Positioning:** Automatically docks to the bottom-left corner of the screen.
+-   **Wide Format Support:** Supports `.gif`, `.png`, `.jpg`, `.jpeg`, `.bmp`, `.mp4`, `.avi`, `.mov`, `.wmv`.
+-   **Tray Control:** Manage your media, change settings, or stop the player from the system tray.
+-   **Settings Persistence:** Remembers your last media, opacity, and window size.
+-   **Interactive Mode:** Easily move the player by unlocking the position via the tray menu.
+-   **Run at Startup:** Option to automatically launch with Windows.
 
-## 🚀 Kurulum & Çalıştırma
+## 🚀 Installation & Usage
 
-### Hazır Sürümü Kullanma
-1.  [Releases](https://github.com/buraaks/OverlayPlayer/releases) kısmından en güncel `OverlayPlayer.exe` dosyasını indirin.
-2.  Doğrudan çalıştırın.
-3.  Dosya seç ekranından bir GIF veya Video seçin.
+### Using the Ready Version
+1.  Download the latest `OverlayPlayer.exe` from [Releases](https://github.com/buraaks/OverlayPlayer/releases).
+2.  Run the executable.
+3.  Select a GIF or Video from the file selection screen.
 
-### Kaynak Koddan Derleme
-Projeyi kendiniz derlemek isterseniz:
-1.  Depoyu klonlayın: `git clone https://github.com/buraaks/OverlayPlayer.git`
-2.  `.NET 8 SDK` yüklü olduğundan emin olun.
-3.  Proje klasöründe terminali açın ve `powershell ./publish.ps1` komutunu çalıştırın.
-4.  `Publish` klasörü içinde tek dosyalık `.exe` dosyanız hazır olacak.
+### Building from Source
+If you want to build the project yourself:
+1.  Clone the repository: `git clone https://github.com/buraaks/OverlayPlayer.git`
+2.  Ensure you have `.NET 8 SDK` installed.
+3.  Open a terminal in the project folder and run: `powershell ./publish.ps1`
+4.  Your single-file `.exe` will be ready in the `Publish` folder.
 
-## 🛠️ Kullanılan Teknolojiler
+## 🛠️ Technologies Used
 -   **C# / WPF** (.NET 8)
--   **WPF-Animated-Gif** (GIF oynatma desteği için)
--   **Windows API (User32.dll)** (Click-through ve pencere yönetimi için)
+-   **WPF-Animated-Gif** (for GIF playback support)
+-   **Windows API (User32.dll)** (for click-through and window management)
 
-## 📝 Lisans
-Bu proje MIT lisansı ile lisanslanmıştır. İstediğiniz gibi kullanabilir ve geliştirebilirsiniz.
+## 📝 License
+This project is licensed under the MIT License. Feel free to use and develop it as you wish.
 
 ---
-*Geliştiren: [Burak](https://github.com/buraaks)*
+*Developed by: [Burak](https://github.com/buraaks)*
