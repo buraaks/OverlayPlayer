@@ -13,6 +13,13 @@ namespace OverlayPlayer.Models
         public bool AutoStart { get; set; } = false;
         public string Language { get; set; } = "en";
         public double RotationAngle { get; set; } = 0;
+        public bool IsMuted { get; set; } = false;
+        public double Volume { get; set; } = 0.5;
+        public bool IsWallpaperMode { get; set; } = false;
+        public bool ShowOnTop { get; set; } = true;
+        public bool LockAspectRatio { get; set; } = true;
+        public bool IsSlideshowEnabled { get; set; } = false;
+        public int SlideshowIntervalSeconds { get; set; } = 10;
 
         private static readonly string SettingsPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),

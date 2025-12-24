@@ -1,0 +1,138 @@
+<Window x:Class="OverlayPlayer.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Overlay Player - Settings" Height="600" Width="450"
+        WindowStartupLocation="CenterScreen"
+        Background="Transparent"
+        WindowStyle="None"
+        AllowsTransparency="True">
+    <Border Background="White" CornerRadius="15" BorderBrush="#E0E0E0" BorderThickness="1">
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <DockPanel Grid.Row="0" Margin="0,0,0,20">
+                <TextBlock Name="TitleText" Text="Ayarlar" FontSize="24" FontWeight="Bold" Foreground="#333333" VerticalAlignment="Center"/>
+                <Button Content="✕" Click="Close_Click" HorizontalAlignment="Right" Background="Transparent" BorderThickness="0" FontSize="20" Foreground="#999999" Cursor="Hand" Padding="5">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Foreground" Value="#FF0000"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </DockPanel>
+
+            <!-- Scrollable Content -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" MaxHeight="450">
+                <StackPanel>
+                    
+                    <!-- Language -->
+                    <GroupBox Header="Dil / Language" Margin="0,5">
+                        <ComboBox Name="LangCombo" SelectionChanged="LangCombo_SelectionChanged" Margin="5">
+                            <ComboBoxItem Content="English" Tag="en"/>
+                            <ComboBoxItem Content="Türkçe" Tag="tr"/>
+                        </ComboBox>
+                    </GroupBox>
+
+                    <!-- Appearance -->
+                    <GroupBox Header="Görünüm / Appearance" Margin="0,5">
+                        <StackPanel Margin="5">
+                            <TextBlock Text="Saydamlık / Opacity" Margin="0,5,0,2"/>
+                            <Slider Name="OpacitySlider" Minimum="0.1" Maximum="1.0" ValueChanged="OpacitySlider_ValueChanged" IsSnapToTickEnabled="True" TickFrequency="0.1"/>
+                            
+                            <TextBlock Text="Boyut / Size" Margin="0,10,0,2"/>
+                            <Slider Name="SizeSlider" Minimum="100" Maximum="1000" ValueChanged="SizeSlider_ValueChanged" IsSnapToTickEnabled="True" TickFrequency="50"/>
+                            
+                            <CheckBox Name="AspectRatioCheck" Content="En-Boy Oranını Koru / Lock Aspect Ratio" Margin="0,10,0,0" Checked="AspectRatioCheck_Changed" Unchecked="AspectRatioCheck_Changed"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <!-- Interaction -->
+                    <GroupBox Header="Etkileşim / Interaction" Margin="0,5">
+                        <StackPanel Margin="5">
+                            <CheckBox Name="InteractiveCheck" Content="Konumu Değiştir / Unlock Position" Margin="0,5" Checked="InteractiveCheck_Changed" Unchecked="InteractiveCheck_Changed"/>
+                            <CheckBox Name="AutoStartCheck" Content="Başlangıçta Çalıştır / Run at Startup" Margin="0,5" Checked="AutoStartCheck_Changed" Unchecked="AutoStartCheck_Changed"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <!-- Sound -->
+                    <GroupBox Header="Ses / Sound" Margin="0,5">
+                        <StackPanel Margin="5">
+                            <CheckBox Name="MuteCheck" Content="Sesi Kapat / Mute" Margin="0,5" Checked="MuteCheck_Changed" Unchecked="MuteCheck_Changed"/>
+                            <TextBlock Text="Ses Seviyesi / Volume" Margin="0,5,0,2"/>
+                            <Slider Name="VolumeSlider" Minimum="0" Maximum="1.0" ValueChanged="VolumeSlider_ValueChanged" IsSnapToTickEnabled="True" TickFrequency="0.1"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <!-- Z-Order -->
+                    <GroupBox Header="Katman / Layers" Margin="0,5">
+                        <StackPanel Margin="5">
+                            <RadioButton Name="TopmostRadio" Content="Her Zaman Üstte / Always on Top" GroupName="ZOrder" Checked="ZOrder_Changed"/>
+                            <RadioButton Name="WallpaperRadio" Content="Arka Plan Modu / Wallpaper Mode" GroupName="ZOrder" Checked="ZOrder_Changed"/>
+                            <RadioButton Name="NormalRadio" Content="Normal" GroupName="ZOrder" Checked="ZOrder_Changed"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <!-- Slideshow -->
+                    <GroupBox Header="Slayt Gösterisi / Slideshow" Margin="0,5">
+                        <StackPanel Margin="5">
+                            <CheckBox Name="SlideshowCheck" Content="Slayt Gösterisini Etkinleştir / Enable Slideshow" Margin="0,5" Checked="SlideshowCheck_Changed" Unchecked="SlideshowCheck_Changed"/>
+                            <TextBlock Text="Geçiş Süresi (Saniye) / Interval (Seconds)" Margin="0,5,0,2"/>
+                            <ComboBox Name="IntervalCombo" SelectionChanged="IntervalCombo_SelectionChanged" Margin="5">
+                                <ComboBoxItem Content="5" Tag="5"/>
+                                <ComboBoxItem Content="10" Tag="10"/>
+                                <ComboBoxItem Content="30" Tag="30"/>
+                                <ComboBoxItem Content="60" Tag="60"/>
+                            </ComboBox>
+                        </StackPanel>
+                    </GroupBox>
+                    
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Footer -->
+            <Grid Grid.Row="2" Margin="0,15,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="v1.3.0" Foreground="#999999" VerticalAlignment="Center"/>
+
+                <Button Name="ResetButton" Grid.Column="1" Content="Varsayılana Sıfırla / Reset Defaults" Click="Reset_Click" 
+                        HorizontalAlignment="Right" Padding="15,10" Background="Transparent" Foreground="#FF3B30" 
+                        BorderThickness="1" BorderBrush="#FF3B30" FontWeight="SemiBold" Cursor="Hand">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#FFF0F0"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

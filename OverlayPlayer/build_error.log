@@ -1,0 +1,13 @@
+  Geri y├╝klenecek projeler belirleniyor...
+  Geri y├╝kleme i├ğin t├╝m projeler g├╝ncel.
+C:\Users\burak\OneDrive\Desktop\Burak\OverlayPlayer\OverlayPlayer\SettingsWindow.xaml.cs(70,17): error CS0104: 'MessageBox', 'System.Windows.Forms.MessageBox' ile 'System.Windows.MessageBox' aras─▒nda belirsiz bir ba┼şvuru [C:\Users\burak\OneDrive\Desktop\Burak\OverlayPlayer\OverlayPlayer\OverlayPlayer.csproj]
+C:\Users\burak\OneDrive\Desktop\Burak\OverlayPlayer\OverlayPlayer\MainWindow.xaml.cs(182,75): warning CS8625: Null sabit de─şer, bo┼ş de─şer atanamayan ba┼şvuru t├╝r├╝ne d├Ân├╝┼şt├╝r├╝lemiyor. [C:\Users\burak\OneDrive\Desktop\Burak\OverlayPlayer\OverlayPlayer\OverlayPlayer.csproj]
+
+Olu┼şturma BA┼ŞARISIZ OLDU.
+
+C:\Users\burak\OneDrive\Desktop\Burak\OverlayPlayer\OverlayPlayer\MainWindow.xaml.cs(182,75): warning CS8625: Null sabit de─şer, bo┼ş de─şer atanamayan ba┼şvuru t├╝r├╝ne d├Ân├╝┼şt├╝r├╝lemiyor. [C:\Users\burak\OneDrive\Desktop\Burak\OverlayPlayer\OverlayPlayer\OverlayPlayer.csproj]
+C:\Users\burak\OneDrive\Desktop\Burak\OverlayPlayer\OverlayPlayer\SettingsWindow.xaml.cs(70,17): error CS0104: 'MessageBox', 'System.Windows.Forms.MessageBox' ile 'System.Windows.MessageBox' aras─▒nda belirsiz bir ba┼şvuru [C:\Users\burak\OneDrive\Desktop\Burak\OverlayPlayer\OverlayPlayer\OverlayPlayer.csproj]
+    1 Uyar─▒
+    1 Hata
+
+Ge├ğen S├╝re 00:00:00.73

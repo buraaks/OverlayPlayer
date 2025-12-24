@@ -8,10 +8,14 @@ OverlayPlayer is a transparent, borderless, and click-through media player that 
 -   **Transparency & Borderless:** No frames and a fully transparent background.
 -   **Click-Through:** Interaction passes through the animation as if it's not there.
 -   **Auto-Positioning:** Automatically docks to the bottom-left corner of the screen.
+-   **Real-time Settings:** Change opacity, size, volume, and more instantly without saving.
+-   **Slideshow Mode:** Automatically cycle through media in a folder with customizable intervals.
+-   **Multi-Language Support:** Fully localized in English and Turkish.
 -   **Wide Format Support:** Supports `.gif`, `.png`, `.jpg`, `.jpeg`, `.bmp`, `.mp4`, `.avi`, `.mov`, `.wmv`.
--   **Tray Control:** Manage your media, change settings, or stop the player from the system tray.
--   **Settings Persistence:** Remembers your last media, opacity, and window size.
--   **Interactive Mode:** Easily move the player by unlocking the position via the tray menu.
+-   **Tray Control:** Access the modern Settings window or exit via the system tray.
+-   **Settings Persistence:** Remembers your preferences automatically.
+-   **Interactive Mode:** Unlock position to drag and resize the player manually.
+-   **Reset to Defaults:** Easily restore original settings with a single click.
 -   **Run at Startup:** Option to automatically launch with Windows.
 
 ## 🚀 Installation & Usage
