@@ -2,7 +2,9 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Forms;
+using System.Windows.Input;
 using OverlayPlayer.Helpers;
+using OverlayPlayer.Models;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
 
@@ -12,13 +14,17 @@ namespace OverlayPlayer
     {
         private NotifyIcon _notifyIcon = null!;
         private ToolStripMenuItem _stopStartMenuItem = null!;
-        private string? _lastSelectedPath;
+        private ToolStripMenuItem _interactiveMenuItem = null!;
+        private ToolStripMenuItem _autoStartMenuItem = null!;
+        private AppSettings _settings = null!;
 
         public MainWindow()
         {
             try
             {
+                _settings = AppSettings.Load();
                 InitializeComponent();
+                ApplySettings();
                 this.Loaded += MainWindow_Loaded;
                 SetupTrayIcon();
             }
@@ -26,6 +32,13 @@ namespace OverlayPlayer
             {
                 MessageBox.Show("Başlatma hatası: " + ex.Message);
             }
+        }
+
+        private void ApplySettings()
+        {
+            this.Opacity = _settings.Opacity;
+            this.Width = _settings.WindowSize;
+            this.Height = _settings.WindowSize;
         }
 
         private void SetupTrayIcon()
@@ -42,20 +55,16 @@ namespace OverlayPlayer
                     using (var stream = iconInfo.Stream)
                     using (var bitmap = new System.Drawing.Bitmap(stream))
                     {
-                        // İkonun tutamacını al
                         IntPtr hIcon = bitmap.GetHicon();
                         try
                         {
-                            // Icon.FromHandle ile ikonu oluştur
                             using (var newIcon = System.Drawing.Icon.FromHandle(hIcon))
                             {
-                                // İkonu kopyalayarak sızıntıyı önle ve boyutu koru
                                 _notifyIcon.Icon = (System.Drawing.Icon)newIcon.Clone();
                             }
                         }
                         finally
                         {
-                            // hIcon'u serbest bırak (GDI sızıntısını önler)
                             WindowHelper.DestroyIcon(hIcon);
                         }
                     }
@@ -74,13 +83,93 @@ namespace OverlayPlayer
             _notifyIcon.Text = "Overlay Player";
 
             var contextMenu = new ContextMenuStrip();
-            contextMenu.Items.Add("Değiştir", null, (s, e) => SelectAndLoadFile());
+            
+            // Medya Değiştir
+            contextMenu.Items.Add("Medyayı Değiştir", null, (s, e) => SelectAndLoadFile());
+            
+            contextMenu.Items.Add(new ToolStripSeparator());
+
+            // Saydamlık Menüsü
+            var opacityMenu = new ToolStripMenuItem("Saydamlık");
+            AddOpacityOption(opacityMenu, "%20", 0.2);
+            AddOpacityOption(opacityMenu, "%40", 0.4);
+            AddOpacityOption(opacityMenu, "%60", 0.6);
+            AddOpacityOption(opacityMenu, "%80", 0.8);
+            AddOpacityOption(opacityMenu, "%100", 1.0);
+            contextMenu.Items.Add(opacityMenu);
+
+            // Boyut Menüsü
+            var sizeMenu = new ToolStripMenuItem("Boyut");
+            AddSizeOption(sizeMenu, "Küçük (200x200)", 200);
+            AddSizeOption(sizeMenu, "Orta (300x300)", 300);
+            AddSizeOption(sizeMenu, "Büyük (400x400)", 400);
+            AddSizeOption(sizeMenu, "Dev (600x600)", 600);
+            contextMenu.Items.Add(sizeMenu);
+
+            contextMenu.Items.Add(new ToolStripSeparator());
+
+            // İnteraktif Mod
+            _interactiveMenuItem = new ToolStripMenuItem("Konum Değiştir (Kilit Aç)", null, OnInteractiveToggled);
+            _interactiveMenuItem.Checked = _settings.IsInteractive;
+            contextMenu.Items.Add(_interactiveMenuItem);
+
+            // Başlangıçta Çalıştır
+            _autoStartMenuItem = new ToolStripMenuItem("Başlangıçta Çalıştır", null, OnAutoStartToggled);
+            _autoStartMenuItem.Checked = WindowHelper.IsAutoStartEnabled();
+            contextMenu.Items.Add(_autoStartMenuItem);
+
+            contextMenu.Items.Add(new ToolStripSeparator());
+
+            // Durdur / Başlat
             _stopStartMenuItem = new ToolStripMenuItem("Durdur", null, OnStopStartClicked);
             contextMenu.Items.Add(_stopStartMenuItem);
-            contextMenu.Items.Add(new ToolStripSeparator());
+
+            // Kapat
             contextMenu.Items.Add("Kapat", null, (s, e) => ExitApplication());
 
             _notifyIcon.ContextMenuStrip = contextMenu;
+        }
+
+        private void AddOpacityOption(ToolStripMenuItem parent, string text, double value)
+        {
+            var item = new ToolStripMenuItem(text, null, (s, e) => {
+                _settings.Opacity = value;
+                this.Opacity = value;
+                _settings.Save();
+            });
+            item.Checked = Math.Abs(_settings.Opacity - value) < 0.01;
+            parent.DropDownItems.Add(item);
+        }
+
+        private void AddSizeOption(ToolStripMenuItem parent, string text, double value)
+        {
+            var item = new ToolStripMenuItem(text, null, (s, e) => {
+                _settings.WindowSize = value;
+                this.Width = value;
+                this.Height = value;
+                PositionWindow(); // Boyut değişince köşeye tekrar oturt
+                _settings.Save();
+            });
+            item.Checked = Math.Abs(_settings.WindowSize - value) < 0.1;
+            parent.DropDownItems.Add(item);
+        }
+
+        private void OnInteractiveToggled(object? sender, EventArgs e)
+        {
+            _settings.IsInteractive = !_settings.IsInteractive;
+            _interactiveMenuItem.Checked = _settings.IsInteractive;
+            WindowHelper.SetWindowClickThrough(this, !_settings.IsInteractive);
+            _settings.Save();
+
+            if (_settings.IsInteractive)
+                MessageBox.Show("Düzenleme modu aktif! Medyayı farenizle sürükleyebilirsiniz. İşiniz bitince kilidi tekrar kapatmayı unutmayın.");
+        }
+
+        private void OnAutoStartToggled(object? sender, EventArgs e)
+        {
+            bool currentState = WindowHelper.IsAutoStartEnabled();
+            WindowHelper.SetAutoStart(!currentState);
+            _autoStartMenuItem.Checked = !currentState;
         }
 
         private void OnStopStartClicked(object? sender, EventArgs e)
@@ -106,9 +195,17 @@ namespace OverlayPlayer
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             PositionWindow();
-            try { WindowHelper.SetWindowClickThrough(this); } catch { }
-            await System.Threading.Tasks.Task.Delay(100);
-            SelectAndLoadFile();
+            WindowHelper.SetWindowClickThrough(this, !_settings.IsInteractive);
+            
+            if (!string.IsNullOrEmpty(_settings.LastFilePath) && File.Exists(_settings.LastFilePath))
+            {
+                LoadMedia(_settings.LastFilePath);
+            }
+            else
+            {
+                await System.Threading.Tasks.Task.Delay(100);
+                SelectAndLoadFile();
+            }
         }
 
         private void PositionWindow()
@@ -116,6 +213,14 @@ namespace OverlayPlayer
             var workingArea = SystemParameters.WorkArea;
             this.Left = 0;
             this.Top = workingArea.Height - this.Height;
+        }
+
+        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (_settings.IsInteractive)
+            {
+                this.DragMove();
+            }
         }
 
         private void SelectAndLoadFile()
@@ -130,12 +235,13 @@ namespace OverlayPlayer
 
                 if (openFileDialog.ShowDialog() == true)
                 {
-                    _lastSelectedPath = openFileDialog.FileName;
-                    LoadMedia(_lastSelectedPath);
+                    _settings.LastFilePath = openFileDialog.FileName;
+                    _settings.Save();
+                    LoadMedia(_settings.LastFilePath);
                     this.Show();
                     _stopStartMenuItem.Text = "Durdur";
                 }
-                else if (string.IsNullOrEmpty(_lastSelectedPath))
+                else if (string.IsNullOrEmpty(_settings.LastFilePath))
                 {
                     Application.Current.Shutdown();
                 }
@@ -161,7 +267,7 @@ namespace OverlayPlayer
                 {
                     MainVideo.Visibility = Visibility.Collapsed;
                     MainGif.Visibility = Visibility.Visible;
-                    WpfAnimatedGif.ImageBehavior.SetAnimatedSource(MainGif, null); // Eski GIF varsa temizle
+                    WpfAnimatedGif.ImageBehavior.SetAnimatedSource(MainGif, null);
                     MainGif.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(path));
                 }
                 else
@@ -182,3 +288,4 @@ namespace OverlayPlayer
         }
     }
 }
+

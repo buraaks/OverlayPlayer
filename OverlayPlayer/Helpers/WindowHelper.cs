@@ -2,6 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
+using Microsoft.Win32;
 
 namespace OverlayPlayer.Helpers
 {
@@ -20,11 +21,48 @@ namespace OverlayPlayer.Helpers
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool DestroyIcon(IntPtr hIcon);
 
-        public static void SetWindowClickThrough(Window window)
+        public static void SetWindowClickThrough(Window window, bool clickThrough)
         {
             var hwnd = new WindowInteropHelper(window).Handle;
             int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
-            SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED);
+            
+            if (clickThrough)
+            {
+                SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED);
+            }
+            else
+            {
+                SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle & ~WS_EX_TRANSPARENT);
+            }
+        }
+
+        public static void SetAutoStart(bool enable)
+        {
+            const string appName = "OverlayPlayer";
+            string? exePath = Environment.ProcessPath;
+            
+            if (exePath == null) return;
+
+            using (RegistryKey? key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true))
+            {
+                if (key != null)
+                {
+                    if (enable)
+                        key.SetValue(appName, $"\"{exePath}\"");
+                    else
+                        key.DeleteValue(appName, false);
+                }
+            }
+        }
+
+        public static bool IsAutoStartEnabled()
+        {
+            const string appName = "OverlayPlayer";
+            using (RegistryKey? key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", false))
+            {
+                return key?.GetValue(appName) != null;
+            }
         }
     }
 }
+
