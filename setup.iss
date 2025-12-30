@@ -23,9 +23,7 @@ UninstallDisplayIcon={app}\OverlayPlayer.exe
 ; LicenseFile= (opsiyonel: lisans dosyası eklenebilir)
 ; InfoBeforeFile= (opsiyonel: kurulum öncesi bilgi dosyası)
 ; InfoAfterFile= (opsiyonel: kurulum sonrası bilgi dosyası)
-; SetupIconFile burada belirtilmiyor çünkü logo.ico dosyası geçersiz
-; Geçerli bir .ico dosyası oluşturulduktan sonra aşağıdaki satır aktif edilebilir:
-; SetupIconFile=.\OverlayPlayer\logo.ico
+SetupIconFile=.\OverlayPlayer\logo.ico
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
