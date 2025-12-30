@@ -40,7 +40,14 @@ namespace OverlayPlayer.Helpers
                 ["InitError"] = "Initialization error: ",
                 ["MediaLoadError"] = "Media loading error: ",
                 ["SelectMediaTitle"] = "Select Media (Video, GIF or Image)",
-                ["AllMediaFiles"] = "All Media Files"
+                ["AllMediaFiles"] = "All Media Files",
+                ["SearchGiphy"] = "Search Giphy",
+                ["GiphyApiKey"] = "Giphy API Key",
+                ["EnterGiphyKey"] = "Enter Giphy API Key",
+                ["Search"] = "Search",
+                ["Trending"] = "Trending",
+                ["NoResults"] = "No results found.",
+                ["Downloading"] = "Downloading..."
             },
             ["tr"] = new()
             {
@@ -74,7 +81,14 @@ namespace OverlayPlayer.Helpers
                 ["InitError"] = "Başlatma hatası: ",
                 ["MediaLoadError"] = "Medya yükleme hatası: ",
                 ["SelectMediaTitle"] = "Medya Seç (Video, GIF veya Resim)",
-                ["AllMediaFiles"] = "Tüm Medya Dosyaları"
+                ["AllMediaFiles"] = "Tüm Medya Dosyaları",
+                ["SearchGiphy"] = "Giphy'de Ara",
+                ["GiphyApiKey"] = "Giphy API Anahtarı",
+                ["EnterGiphyKey"] = "Giphy API Anahtarını Girin",
+                ["Search"] = "Ara",
+                ["Trending"] = "Trendler",
+                ["NoResults"] = "Sonuç bulunamadı.",
+                ["Downloading"] = "İndiriliyor..."
             }
         };
 

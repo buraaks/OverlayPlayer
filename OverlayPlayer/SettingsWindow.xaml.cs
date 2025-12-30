@@ -3,6 +3,8 @@ using System.Windows;
 using System.Windows.Controls;
 using OverlayPlayer.Helpers;
 using OverlayPlayer.Models;
+using MessageBox = System.Windows.MessageBox;
+
 
 namespace OverlayPlayer
 {
@@ -61,6 +63,7 @@ namespace OverlayPlayer
                     break;
                 }
             }
+            ApiKeyBox.Text = _settings.GiphyApiKey;
             _isInitializing = false;
         }
 
@@ -81,7 +84,7 @@ namespace OverlayPlayer
 
         private void Reset_Click(object sender, RoutedEventArgs e)
         {
-            if (System.Windows.MessageBox.Show("Are you sure you want to reset all settings to defaults?", "Reset", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+            if (MessageBox.Show("Are you sure you want to reset all settings to defaults?", "Reset", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
             {
                 _settings.Opacity = 1.0;
                 _settings.WindowSize = 300;
@@ -190,6 +193,12 @@ namespace OverlayPlayer
                 _settings.SlideshowIntervalSeconds = seconds;
                 SaveAndApply();
             }
+        }
+        private void ApiKeyBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_isInitializing) return;
+            _settings.GiphyApiKey = ApiKeyBox.Text;
+            SaveAndApply();
         }
     }
 }

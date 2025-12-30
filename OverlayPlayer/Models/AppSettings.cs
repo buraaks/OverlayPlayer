@@ -20,6 +20,7 @@ namespace OverlayPlayer.Models
         public bool LockAspectRatio { get; set; } = true;
         public bool IsSlideshowEnabled { get; set; } = false;
         public int SlideshowIntervalSeconds { get; set; } = 10;
+        public string GiphyApiKey { get; set; } = "52yaKbb3nCit6sChlZ5gr0txmLsh2qBY";
 
         private static readonly string SettingsPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),

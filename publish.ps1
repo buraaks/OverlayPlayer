@@ -22,8 +22,20 @@ if (Test-Path $outputPath) {
 dotnet publish $projectPath -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:PublishReadyToRun=true -p:IncludeNativeLibrariesForSelfExtract=true -o $outputPath
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "`nBaşarılı! Uygulama '$outputPath' klasörüne çıkarıldı." -ForegroundColor Green
-    Write-Host "Dağıtıma hazır dosya: OverlayPlayer.exe" -ForegroundColor Yellow
+    $exePath = Join-Path $outputPath "OverlayPlayer.exe"
+    if (Test-Path $exePath) {
+        $fileInfo = Get-Item $exePath
+        $fileSizeMB = [math]::Round($fileInfo.Length / 1MB, 2)
+        
+        Write-Host "`n✓ Başarılı! Uygulama '$outputPath' klasörüne çıkarıldı." -ForegroundColor Green
+        Write-Host "✓ Dosya: OverlayPlayer.exe" -ForegroundColor Yellow
+        Write-Host "✓ Boyut: $fileSizeMB MB" -ForegroundColor Yellow
+        Write-Host "✓ Tarih: $($fileInfo.LastWriteTime)" -ForegroundColor Yellow
+        Write-Host "`nSetup dosyası oluşturmak için Inno Setup ile setup.iss dosyasını derleyin." -ForegroundColor Cyan
+    } else {
+        Write-Host "`n⚠ Uyarı: EXE dosyası bulunamadı!" -ForegroundColor Yellow
+    }
 } else {
-    Write-Host "`nHata: Yayınlama işlemi başarısız oldu." -ForegroundColor Red
+    Write-Host "`n✗ Hata: Yayınlama işlemi başarısız oldu." -ForegroundColor Red
+    exit 1
 }

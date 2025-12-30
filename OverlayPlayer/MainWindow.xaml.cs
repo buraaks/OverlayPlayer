@@ -17,6 +17,7 @@ namespace OverlayPlayer
         private AppSettings _settings = null!;
         private HotkeyHelper? _hotkeyHelper;
         private System.Windows.Threading.DispatcherTimer? _slideshowTimer;
+        private System.Windows.Threading.DispatcherTimer? _topmostWatchdogTimer;
         private double _originalWidth = 300;
         private double _originalHeight = 300;
 
@@ -36,6 +37,15 @@ namespace OverlayPlayer
                     _originalWidth = MainVideo.NaturalVideoWidth;
                     _originalHeight = MainVideo.NaturalVideoHeight;
                     UpdateWindowSize();
+                };
+
+                _topmostWatchdogTimer = new System.Windows.Threading.DispatcherTimer();
+                _topmostWatchdogTimer.Interval = TimeSpan.FromSeconds(1);
+                _topmostWatchdogTimer.Tick += (s, e) => {
+                    if (_settings.ShowOnTop && this.Visibility == Visibility.Visible)
+                    {
+                        ApplyZOrder();
+                    }
                 };
             }
             catch (Exception ex)
@@ -80,6 +90,10 @@ namespace OverlayPlayer
             MainVideo.IsMuted = _settings.IsMuted;
             ApplyRotation();
             ApplyZOrder();
+            
+            if (_settings.ShowOnTop) _topmostWatchdogTimer?.Start();
+            else _topmostWatchdogTimer?.Stop();
+
             ToggleSlideshow(_settings.IsSlideshowEnabled);
             WindowHelper.SetWindowClickThrough(this, !_settings.IsInteractive);
         }
@@ -108,21 +122,90 @@ namespace OverlayPlayer
             
             try
             {
-                var iconUri = new Uri("pack://application:,,,/logo.png");
-                var iconInfo = Application.GetResourceStream(iconUri);
-                if (iconInfo != null)
+                // Try to load from embedded icon first
+                System.Drawing.Icon? appIcon = null;
+                
+                // Method 1: Try to load from application icon (logo.ico)
+                try
                 {
-                    using (var stream = iconInfo.Stream)
-                    using (var bitmap = new System.Drawing.Bitmap(stream))
+                    var iconUri = new Uri("pack://application:,,,/logo.ico");
+                    var iconInfo = Application.GetResourceStream(iconUri);
+                    if (iconInfo != null)
                     {
-                        IntPtr hIcon = bitmap.GetHicon();
-                        try { using (var newIcon = System.Drawing.Icon.FromHandle(hIcon)) { _notifyIcon.Icon = (System.Drawing.Icon)newIcon.Clone(); } }
-                        finally { WindowHelper.DestroyIcon(hIcon); }
+                        using (var stream = iconInfo.Stream)
+                        {
+                            appIcon = new System.Drawing.Icon(stream);
+                        }
                     }
                 }
-                else { _notifyIcon.Icon = System.Drawing.SystemIcons.Application; }
+                catch { }
+                
+                // Method 2: If icon not found, try PNG and convert
+                if (appIcon == null)
+                {
+                    try
+                    {
+                        var iconUri = new Uri("pack://application:,,,/logo.png");
+                        var iconInfo = Application.GetResourceStream(iconUri);
+                        if (iconInfo != null)
+                        {
+                            using (var stream = iconInfo.Stream)
+                            using (var bitmap = new System.Drawing.Bitmap(stream))
+                            {
+                                // Resize to 16x16 for better tray icon display
+                                using (var resized = new System.Drawing.Bitmap(bitmap, new System.Drawing.Size(16, 16)))
+                                {
+                                    IntPtr hIcon = resized.GetHicon();
+                                    try 
+                                    { 
+                                        appIcon = System.Drawing.Icon.FromHandle(hIcon);
+                                        appIcon = (System.Drawing.Icon)appIcon.Clone(); // Clone to keep after handle is destroyed
+                                    }
+                                    finally { WindowHelper.DestroyIcon(hIcon); }
+                                }
+                            }
+                        }
+                    }
+                    catch { }
+                }
+                
+                // Method 3: Try to load from executable's icon
+                if (appIcon == null)
+                {
+                    try
+                    {
+                        // For single-file apps, use AppContext.BaseDirectory instead of Assembly.Location
+                        var baseDir = AppContext.BaseDirectory;
+                        var exePath = System.IO.Path.Combine(baseDir, "OverlayPlayer.exe");
+                        
+                        // If exe not found in base directory, try current process path
+                        if (!System.IO.File.Exists(exePath))
+                        {
+                            exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
+                        }
+                        
+                        if (!string.IsNullOrEmpty(exePath) && System.IO.File.Exists(exePath))
+                        {
+                            appIcon = System.Drawing.Icon.ExtractAssociatedIcon(exePath);
+                        }
+                    }
+                    catch { }
+                }
+                
+                // Set the icon
+                if (appIcon != null)
+                {
+                    _notifyIcon.Icon = appIcon!;
+                }
+                else
+                {
+                    _notifyIcon.Icon = System.Drawing.SystemIcons.Application;
+                }
             }
-            catch { _notifyIcon.Icon = System.Drawing.SystemIcons.Application; }
+            catch 
+            { 
+                _notifyIcon.Icon = System.Drawing.SystemIcons.Application; 
+            }
 
             _notifyIcon.Visible = true;
             _notifyIcon.Text = "Overlay Player";
@@ -130,6 +213,11 @@ namespace OverlayPlayer
             
             // Core Actions
             contextMenu.Items.Add(LocalizationService.Get("ChangeMedia"), null, (s, e) => SelectAndLoadFile());
+            contextMenu.Items.Add(LocalizationService.Get("SearchGiphy"), null, (s, e) => {
+                var searchWin = new GiphySearchWindow(this, _settings.GiphyApiKey);
+                searchWin.Owner = this;
+                searchWin.Show();
+            });
 
             // 90 Rotation remains as a quick action (opinionated, but useful)
             contextMenu.Items.Add(LocalizationService.Get("Rotate90"), null, (s, e) => {
@@ -143,6 +231,7 @@ namespace OverlayPlayer
             // Settings Window Trigger
             contextMenu.Items.Add(LocalizationService.Get("Settings"), null, (s, e) => {
                 var settingsWin = new SettingsWindow(_settings);
+                settingsWin.Owner = this;
                 settingsWin.Show();
             });
 
@@ -178,8 +267,14 @@ namespace OverlayPlayer
         {
             PositionWindow();
             WindowHelper.SetWindowClickThrough(this, !_settings.IsInteractive);
+            
+            // Ensure ToolWindow style is applied to help stay on top of fullscreen apps
+            var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+            int exStyle = WindowHelper.GetWindowLong(hwnd, WindowHelper.GWL_EXSTYLE);
+            WindowHelper.SetWindowLong(hwnd, WindowHelper.GWL_EXSTYLE, exStyle | WindowHelper.WS_EX_TOOLWINDOW);
+
             _hotkeyHelper = new HotkeyHelper(this);
-            _hotkeyHelper.HotkeyPressed += () => OnStopStartClicked(null, null);
+            _hotkeyHelper.HotkeyPressed += () => OnStopStartClicked(null, EventArgs.Empty);
             if (!string.IsNullOrEmpty(_settings.LastFilePath) && File.Exists(_settings.LastFilePath)) LoadMedia(_settings.LastFilePath);
             else { await System.Threading.Tasks.Task.Delay(100); SelectAndLoadFile(); }
         }
@@ -213,7 +308,7 @@ namespace OverlayPlayer
             } catch { }
         }
 
-        private void LoadMediaWithPersistence(string path)
+        public void LoadMediaWithPersistence(string path)
         {
             _settings.LastFilePath = path;
             _settings.Save();
@@ -276,11 +371,24 @@ namespace OverlayPlayer
                 if (string.IsNullOrEmpty(folder)) return;
                 string[] extensions = { ".mp4", ".gif", ".png", ".jpg", ".jpeg", ".bmp", ".avi", ".mov", ".wmv" };
                 var files = Directory.GetFiles(folder).Where(f => extensions.Contains(Path.GetExtension(f).ToLower())).OrderBy(f => f).ToList();
-                if (files.Count <= 1) return;
+                if (files == null || files.Count <= 1) return;
+                
                 int currentIndex = files.IndexOf(_settings.LastFilePath);
+                // If current file not found in list, start from beginning
+                if (currentIndex < 0) currentIndex = -1;
+                
                 int nextIndex = (currentIndex + 1) % files.Count;
-                LoadMediaWithPersistence(files[nextIndex]);
-            } catch { }
+                
+                // Validate index before accessing
+                if (nextIndex >= 0 && nextIndex < files.Count)
+                {
+                    LoadMediaWithPersistence(files[nextIndex]);
+                }
+            } 
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error in PlayNextInFolder: {ex.Message}");
+            }
         }
 
         private void MainVideo_MediaEnded(object sender, RoutedEventArgs e) { MainVideo.Position = TimeSpan.Zero; MainVideo.Play(); }

@@ -10,7 +10,7 @@
         Topmost="True"
         ResizeMode="NoResize"
         ShowInTaskbar="False"
-        Icon="logo.png"
+        Icon="logo.ico"
         MouseLeftButtonDown="Window_MouseLeftButtonDown">
     <Grid>
         <!-- Video Oynatıcı (Source kod tarafında atanacak) -->

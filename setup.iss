@@ -6,6 +6,9 @@ AppId={{D3B3A5E1-C8A4-4B9E-B3D9-9F8A7E6D5C4B}
 AppName=Overlay Player
 AppVersion=1.0
 AppPublisher=Burak
+AppPublisherURL=https://github.com/buraaks/OverlayPlayer
+AppSupportURL=https://github.com/buraaks/OverlayPlayer
+AppUpdatesURL=https://github.com/buraaks/OverlayPlayer
 DefaultDirName={autopf}\Overlay Player
 DefaultGroupName=Overlay Player
 AllowNoIcons=yes
@@ -16,6 +19,11 @@ Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
 PrivilegesRequired=lowest
+UninstallDisplayIcon={app}\OverlayPlayer.exe
+; LicenseFile= (opsiyonel: lisans dosyası eklenebilir)
+; InfoBeforeFile= (opsiyonel: kurulum öncesi bilgi dosyası)
+; InfoAfterFile= (opsiyonel: kurulum sonrası bilgi dosyası)
+SetupIconFile=.\OverlayPlayer\logo.ico
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -30,6 +38,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 ; Yayınladığımız tek EXE dosyasını kaynak olarak alıyoruz
 Source: ".\Publish\OverlayPlayer.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\Publish\OverlayPlayer.pdb"; DestDir: "{app}"; Flags: ignoreversion; Attribs: hidden
 ; Eğer uygulama ile beraber gelmesi gereken başka klasörler varsa buraya eklenebilir
 
 [Icons]
@@ -38,3 +47,7 @@ Name: "{commondesktop}\Overlay Player"; Filename: "{app}\OverlayPlayer.exe"; Tas
 
 [Run]
 Filename: "{app}\OverlayPlayer.exe"; Description: "{cm:LaunchProgram,Overlay Player}"; Flags: nowait postinstall skipifsilent
+
+[UninstallDelete]
+Type: filesandordirs; Name: "{app}\Cache"
+Type: filesandordirs; Name: "{localappdata}\OverlayPlayer"

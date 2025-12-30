@@ -95,6 +95,14 @@
                             </ComboBox>
                         </StackPanel>
                     </GroupBox>
+
+                    <!-- Giphy API -->
+                    <GroupBox Header="Giphy API" Margin="0,5">
+                        <StackPanel Margin="5">
+                            <TextBlock Text="API Key" Margin="0,5,0,2"/>
+                            <TextBox Name="ApiKeyBox" Margin="0,5" Padding="5" TextChanged="ApiKeyBox_TextChanged"/>
+                        </StackPanel>
+                    </GroupBox>
                     
                 </StackPanel>
             </ScrollViewer>
