@@ -1,1 +1,0 @@
-MSBUILD : error MSB1003: Bir proje veya çözüm dosyası belirtin. Geçerli çalışma dizini bir proje veya çözüm dosyası içermiyor.

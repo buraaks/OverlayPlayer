@@ -32,10 +32,15 @@ if ($LASTEXITCODE -eq 0) {
         Write-Host "✓ Boyut: $fileSizeMB MB" -ForegroundColor Yellow
         Write-Host "✓ Tarih: $($fileInfo.LastWriteTime)" -ForegroundColor Yellow
         Write-Host "`nSetup dosyası oluşturmak için Inno Setup ile setup.iss dosyasını derleyin." -ForegroundColor Cyan
-    } else {
+    }
+    else {
         Write-Host "`n⚠ Uyarı: EXE dosyası bulunamadı!" -ForegroundColor Yellow
     }
-} else {
+}
+else {
     Write-Host "`n✗ Hata: Yayınlama işlemi başarısız oldu." -ForegroundColor Red
+    Read-Host "Çıkmak için bir tuşa basın..."
     exit 1
 }
+
+Read-Host "Çıkmak için bir tuşa basın..."

@@ -8,6 +8,7 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>logo.ico</ApplicationIcon>
+    <Version>2.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

@@ -65,7 +65,9 @@ namespace OverlayPlayer
             SetLoading(true);
             try
             {
-                var response = await _giphyService.Trending(_apiKey).ConfigureAwait(false);
+                bool isSticker = false;
+                await Dispatcher.InvokeAsync(() => isSticker = StickerCheckBox.IsChecked ?? false);
+                var response = await _giphyService.Trending(_apiKey, isSticker).ConfigureAwait(false);
                 
                 // Switch back to UI thread before updating UI
                 await Dispatcher.InvokeAsync(() =>
@@ -103,7 +105,9 @@ namespace OverlayPlayer
             SetLoading(true);
             try
             {
-                var response = await _giphyService.Search(query, _apiKey).ConfigureAwait(false);
+                bool isSticker = false;
+                await Dispatcher.InvokeAsync(() => isSticker = StickerCheckBox.IsChecked ?? false);
+                var response = await _giphyService.Search(query, _apiKey, isSticker).ConfigureAwait(false);
                 
                 // Switch back to UI thread before updating UI
                 await Dispatcher.InvokeAsync(() =>
@@ -368,6 +372,13 @@ namespace OverlayPlayer
         {
             _giphyService?.Dispose();
             base.OnClosed(e);
+        }
+        private void StickerCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(SearchBox.Text))
+                LoadTrending();
+            else
+                DoSearch(SearchBox.Text);
         }
     }
 }

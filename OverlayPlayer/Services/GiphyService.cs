@@ -13,7 +13,7 @@ namespace OverlayPlayer.Services
         private readonly HttpClient _httpClient;
         private readonly bool _useSharedClient;
         private bool _disposed = false;
-        private const string BaseUrl = "https://api.giphy.com/v1/gifs";
+        private const string BaseUrl = "https://api.giphy.com/v1";
 
         public GiphyService(bool useSharedClient = true)
         {
@@ -21,7 +21,7 @@ namespace OverlayPlayer.Services
             _httpClient = useSharedClient ? _sharedHttpClient : new HttpClient();
         }
 
-        public async Task<GiphyResponse?> Search(string query, string apiKey, int limit = 25, int offset = 0)
+        public async Task<GiphyResponse?> Search(string query, string apiKey, bool isSticker = false, int limit = 25, int offset = 0)
         {
             if (string.IsNullOrWhiteSpace(apiKey))
             {
@@ -38,7 +38,8 @@ namespace OverlayPlayer.Services
             try
             {
                 string encodedQuery = Uri.EscapeDataString(query);
-                string url = $"{BaseUrl}/search?api_key={apiKey}&q={encodedQuery}&limit={limit}&offset={offset}&rating=g&lang=en";
+                string type = isSticker ? "stickers" : "gifs";
+                string url = $"{BaseUrl}/{type}/search?api_key={apiKey}&q={encodedQuery}&limit={limit}&offset={offset}&rating=g&lang=en";
                 
                 var response = await _httpClient.GetAsync(url);
                 
@@ -46,27 +47,11 @@ namespace OverlayPlayer.Services
                 {
                     string errorContent = await response.Content.ReadAsStringAsync();
                     System.Diagnostics.Debug.WriteLine($"GiphyService.Search: HTTP {response.StatusCode} - {errorContent}");
-                    
-                    // Handle specific error codes
-                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                    {
-                        System.Diagnostics.Debug.WriteLine("GiphyService.Search: Invalid API key");
-                    }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
-                    {
-                        System.Diagnostics.Debug.WriteLine("GiphyService.Search: Rate limit exceeded");
-                    }
-                    
                     return null;
                 }
 
                 string json = await response.Content.ReadAsStringAsync();
-                
-                if (string.IsNullOrWhiteSpace(json))
-                {
-                    System.Diagnostics.Debug.WriteLine("GiphyService.Search: Empty response from API");
-                    return null;
-                }
+                if (string.IsNullOrWhiteSpace(json)) return null;
 
                 try
                 {
@@ -78,86 +63,33 @@ namespace OverlayPlayer.Services
                     return null;
                 }
             }
-            catch (HttpRequestException ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"GiphyService.Search: HTTP request error - {ex.Message}");
-                return null;
-            }
-            catch (TaskCanceledException ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"GiphyService.Search: Request timeout - {ex.Message}");
-                return null;
-            }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"GiphyService.Search: Unexpected error - {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"GiphyService.Search: Error - {ex.Message}");
                 return null;
             }
         }
 
-        public async Task<GiphyResponse?> Trending(string apiKey, int limit = 25, int offset = 0)
+        public async Task<GiphyResponse?> Trending(string apiKey, bool isSticker = false, int limit = 25, int offset = 0)
         {
-            if (string.IsNullOrWhiteSpace(apiKey))
-            {
-                System.Diagnostics.Debug.WriteLine("GiphyService.Trending: API key is empty");
-                return null;
-            }
+            if (string.IsNullOrWhiteSpace(apiKey)) return null;
 
             try
             {
-                string url = $"{BaseUrl}/trending?api_key={apiKey}&limit={limit}&offset={offset}&rating=g";
+                string type = isSticker ? "stickers" : "gifs";
+                string url = $"{BaseUrl}/{type}/trending?api_key={apiKey}&limit={limit}&offset={offset}&rating=g";
                 
                 var response = await _httpClient.GetAsync(url);
-                
-                if (!response.IsSuccessStatusCode)
-                {
-                    string errorContent = await response.Content.ReadAsStringAsync();
-                    System.Diagnostics.Debug.WriteLine($"GiphyService.Trending: HTTP {response.StatusCode} - {errorContent}");
-                    
-                    // Handle specific error codes
-                    if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                    {
-                        System.Diagnostics.Debug.WriteLine("GiphyService.Trending: Invalid API key");
-                    }
-                    else if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
-                    {
-                        System.Diagnostics.Debug.WriteLine("GiphyService.Trending: Rate limit exceeded");
-                    }
-                    
-                    return null;
-                }
+                if (!response.IsSuccessStatusCode) return null;
 
                 string json = await response.Content.ReadAsStringAsync();
-                
-                if (string.IsNullOrWhiteSpace(json))
-                {
-                    System.Diagnostics.Debug.WriteLine("GiphyService.Trending: Empty response from API");
-                    return null;
-                }
+                if (string.IsNullOrWhiteSpace(json)) return null;
 
-                try
-                {
-                    return JsonSerializer.Deserialize<GiphyResponse>(json);
-                }
-                catch (JsonException ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"GiphyService.Trending: JSON deserialization error - {ex.Message}");
-                    return null;
-                }
-            }
-            catch (HttpRequestException ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"GiphyService.Trending: HTTP request error - {ex.Message}");
-                return null;
-            }
-            catch (TaskCanceledException ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"GiphyService.Trending: Request timeout - {ex.Message}");
-                return null;
+                return JsonSerializer.Deserialize<GiphyResponse>(json);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"GiphyService.Trending: Unexpected error - {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"GiphyService.Trending: Error - {ex.Message}");
                 return null;
             }
         }
@@ -249,7 +181,7 @@ namespace OverlayPlayer.Services
 
             try
             {
-                string url = $"{BaseUrl}/trending?api_key={apiKey}&limit=1&rating=g";
+                string url = $"{BaseUrl}/gifs/trending?api_key={apiKey}&limit=1&rating=g";
                 var response = await _httpClient.GetAsync(url);
                 
                 if (response.IsSuccessStatusCode)

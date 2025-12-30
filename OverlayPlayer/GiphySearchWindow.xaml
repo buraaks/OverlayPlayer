@@ -41,6 +41,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBox Name="SearchBox" Grid.Column="0" Height="40" VerticalContentAlignment="Center" Padding="10,0" FontSize="14" KeyDown="SearchBox_KeyDown"
                          BorderBrush="#E0E0E0" BorderThickness="1">
@@ -58,6 +59,11 @@
                         </Style>
                     </Button.Resources>
                 </Button>
+                <CheckBox Name="StickerCheckBox" Grid.Column="2" Content="Stickers" VerticalAlignment="Center" Margin="10,0,0,0" Checked="StickerCheckBox_CheckedChanged" Unchecked="StickerCheckBox_CheckedChanged">
+                    <CheckBox.LayoutTransform>
+                        <ScaleTransform ScaleX="1.2" ScaleY="1.2"/>
+                    </CheckBox.LayoutTransform>
+                </CheckBox>
             </Grid>
 
             <!-- Result Grid -->
