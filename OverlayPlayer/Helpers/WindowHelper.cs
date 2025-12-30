@@ -12,6 +12,7 @@ namespace OverlayPlayer.Helpers
         public const int WS_EX_LAYERED = 0x00080000;
         public const int WS_EX_TOOLWINDOW = 0x00000080;
         public const int WS_EX_NOACTIVATE = 0x08000000;
+        public const int WS_EX_TOPMOST = 0x00000008;
         public const int GWL_EXSTYLE = -20;
 
         private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
@@ -21,6 +22,8 @@ namespace OverlayPlayer.Helpers
         private const uint SWP_NOMOVE = 0x0002;
         private const uint SWP_NOACTIVATE = 0x0010;
         private const uint SWP_SHOWWINDOW = 0x0040;
+        private const uint SWP_NOSENDCHANGING = 0x0400;
+        private const uint SWP_ASYNCWINDOWPOS = 0x4000;
 
         [DllImport("user32.dll")]
         public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
@@ -35,6 +38,12 @@ namespace OverlayPlayer.Helpers
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
         public static void SetWindowClickThrough(Window window, bool clickThrough)
         {
             var hwnd = new WindowInteropHelper(window).Handle;
@@ -42,27 +51,73 @@ namespace OverlayPlayer.Helpers
             
             if (clickThrough)
             {
-                // WS_EX_NOACTIVATE ensures the window doesn't take focus when clicked (if it somehow gets clicked)
+                // WS_EX_NOACTIVATE ensures the window doesn't take focus when clicked
                 // WS_EX_TOOLWINDOW hides it from taskbar and alt-tab
-                SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE);
+                // WS_EX_TOPMOST helps maintain topmost status
+                SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TRANSPARENT | WS_EX_LAYERED | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TOPMOST);
             }
             else
             {
-                // When interactive, we might want to keep WS_EX_TOOLWINDOW but remove TRANSPARENT and NOACTIVATE
-                SetWindowLong(hwnd, GWL_EXSTYLE, (extendedStyle & ~WS_EX_TRANSPARENT) | WS_EX_TOOLWINDOW);
+                // When interactive, keep WS_EX_TOOLWINDOW and WS_EX_TOPMOST but remove TRANSPARENT
+                SetWindowLong(hwnd, GWL_EXSTYLE, (extendedStyle & ~WS_EX_TRANSPARENT) | WS_EX_TOOLWINDOW | WS_EX_TOPMOST);
             }
         }
 
         public static void SetWindowZOrder(Window window, bool topmost, bool bottommost)
         {
             var hwnd = new WindowInteropHelper(window).Handle;
+            if (hwnd == IntPtr.Zero) return;
+
             IntPtr insertAfter = HWND_NOTOPMOST;
 
             if (topmost) insertAfter = HWND_TOPMOST;
             else if (bottommost) insertAfter = HWND_BOTTOM;
 
-            SetWindowPos(hwnd, insertAfter, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+            // Use multiple flags for more aggressive positioning
+            // SWP_ASYNCWINDOWPOS prevents blocking if target window is busy
+            // SWP_NOSENDCHANGING prevents sending WM_WINDOWPOSCHANGING
+            SetWindowPos(hwnd, insertAfter, 0, 0, 0, 0, 
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW | SWP_NOSENDCHANGING | SWP_ASYNCWINDOWPOS);
+            
+            // Double-tap for stubborn windows
+            if (topmost)
+            {
+                SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, 
+                    SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
+            }
         }
+
+        public static bool IsOtherWindowFullscreen()
+        {
+            IntPtr foreground = GetForegroundWindow();
+            if (foreground == IntPtr.Zero) return false;
+            
+            // Check if foreground window is a fullscreen application
+            RECT rect;
+            if (GetWindowRect(foreground, out rect))
+            {
+                int screenWidth = (int)System.Windows.SystemParameters.PrimaryScreenWidth;
+                int screenHeight = (int)System.Windows.SystemParameters.PrimaryScreenHeight;
+                
+                // If window covers entire screen, it's likely fullscreen
+                return rect.Left <= 0 && rect.Top <= 0 && 
+                       rect.Right >= screenWidth && rect.Bottom >= screenHeight;
+            }
+            return false;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
         public static void SetAutoStart(bool enable)
         {

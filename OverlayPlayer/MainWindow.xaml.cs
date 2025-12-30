@@ -40,11 +40,27 @@ namespace OverlayPlayer
                 };
 
                 _topmostWatchdogTimer = new System.Windows.Threading.DispatcherTimer();
-                _topmostWatchdogTimer.Interval = TimeSpan.FromSeconds(1);
+                // Daha hızlı interval - oyunlar için agresif topmost
+                _topmostWatchdogTimer.Interval = TimeSpan.FromMilliseconds(250);
                 _topmostWatchdogTimer.Tick += (s, e) => {
                     if (_settings.ShowOnTop && this.Visibility == Visibility.Visible)
                     {
+                        // Topmost'u sürekli zorla
                         ApplyZOrder();
+                        
+                        // Tam ekran uygulama algılandığında ekstra zorla
+                        if (WindowHelper.IsOtherWindowFullscreen())
+                        {
+                            // Pencere stillerini yeniden uygula
+                            var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+                            if (hwnd != IntPtr.Zero)
+                            {
+                                int exStyle = WindowHelper.GetWindowLong(hwnd, WindowHelper.GWL_EXSTYLE);
+                                WindowHelper.SetWindowLong(hwnd, WindowHelper.GWL_EXSTYLE, 
+                                    exStyle | WindowHelper.WS_EX_TOPMOST | WindowHelper.WS_EX_TOOLWINDOW);
+                            }
+                            ApplyZOrder();
+                        }
                     }
                 };
             }
