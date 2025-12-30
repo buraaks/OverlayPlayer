@@ -168,8 +168,8 @@ namespace OverlayPlayer
                             using (var stream = iconInfo.Stream)
                             using (var bitmap = new System.Drawing.Bitmap(stream))
                             {
-                                // Resize to 16x16 for better tray icon display
-                                using (var resized = new System.Drawing.Bitmap(bitmap, new System.Drawing.Size(16, 16)))
+                                // Resize to 32x32 for better tray icon display
+                                using (var resized = new System.Drawing.Bitmap(bitmap, new System.Drawing.Size(32, 32)))
                                 {
                                     IntPtr hIcon = resized.GetHicon();
                                     try 
