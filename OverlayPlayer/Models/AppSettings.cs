@@ -21,6 +21,8 @@ namespace OverlayPlayer.Models
         public bool IsSlideshowEnabled { get; set; } = false;
         public int SlideshowIntervalSeconds { get; set; } = 10;
         public string GiphyApiKey { get; set; } = "52yaKbb3nCit6sChlZ5gr0txmLsh2qBY";
+        public double? WindowLeft { get; set; } = null;
+        public double? WindowTop { get; set; } = null;
 
         private static readonly string SettingsPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),

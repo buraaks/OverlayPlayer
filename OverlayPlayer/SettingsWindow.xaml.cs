@@ -63,7 +63,6 @@ namespace OverlayPlayer
                     break;
                 }
             }
-            ApiKeyBox.Text = _settings.GiphyApiKey;
             _isInitializing = false;
         }
 
@@ -193,12 +192,6 @@ namespace OverlayPlayer
                 _settings.SlideshowIntervalSeconds = seconds;
                 SaveAndApply();
             }
-        }
-        private void ApiKeyBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (_isInitializing) return;
-            _settings.GiphyApiKey = ApiKeyBox.Text;
-            SaveAndApply();
         }
     }
 }

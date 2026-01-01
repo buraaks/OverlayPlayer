@@ -295,7 +295,22 @@ namespace OverlayPlayer
             else { await System.Threading.Tasks.Task.Delay(100); SelectAndLoadFile(); }
         }
 
-        private void PositionWindow() { var workingArea = SystemParameters.WorkArea; this.Left = 0; this.Top = workingArea.Height - this.Height; }
+        private void PositionWindow()
+        {
+            // Kaydedilmiş konum varsa onu kullan
+            if (_settings.WindowLeft.HasValue && _settings.WindowTop.HasValue)
+            {
+                this.Left = _settings.WindowLeft.Value;
+                this.Top = _settings.WindowTop.Value;
+            }
+            else
+            {
+                // Varsayılan konum: sol alt köşe
+                var workingArea = SystemParameters.WorkArea;
+                this.Left = 0;
+                this.Top = workingArea.Height - this.Height;
+            }
+        }
 
         private void UpdateWindowSize()
         {
@@ -306,10 +321,25 @@ namespace OverlayPlayer
                 else { this.Height = _settings.WindowSize; this.Width = _settings.WindowSize * ratio; }
             }
             else { this.Width = _settings.WindowSize; this.Height = _settings.WindowSize; }
-            PositionWindow();
+            
+            // Sadece ilk yüklemede atau konum kaydedilmemişse konumlandır
+            if (!_settings.WindowLeft.HasValue || !_settings.WindowTop.HasValue)
+            {
+                PositionWindow();
+            }
         }
 
-        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) { if (_settings.IsInteractive) this.DragMove(); }
+        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (_settings.IsInteractive)
+            {
+                this.DragMove();
+                // Sürükleme bittiğinde konumu kaydet
+                _settings.WindowLeft = this.Left;
+                _settings.WindowTop = this.Top;
+                _settings.Save();
+            }
+        }
 
         private void SelectAndLoadFile()
         {
