@@ -47,10 +47,16 @@
                     <GroupBox Header="Görünüm / Appearance" Margin="0,5">
                         <StackPanel Margin="5">
                             <TextBlock Text="Saydamlık / Opacity" Margin="0,5,0,2"/>
-                            <Slider Name="OpacitySlider" Minimum="0.1" Maximum="1.0" ValueChanged="OpacitySlider_ValueChanged" IsSnapToTickEnabled="True" TickFrequency="0.1"/>
+                            <Slider Name="OpacitySlider" Minimum="0.1" Maximum="1.0" 
+                                    Thumb.DragStarted="Slider_DragStarted" 
+                                    Thumb.DragCompleted="OpacitySlider_DragCompleted"
+                                    IsSnapToTickEnabled="True" TickFrequency="0.1" SmallChange="0.1" LargeChange="0.1"/>
                             
                             <TextBlock Text="Boyut / Size" Margin="0,10,0,2"/>
-                            <Slider Name="SizeSlider" Minimum="100" Maximum="1000" ValueChanged="SizeSlider_ValueChanged" IsSnapToTickEnabled="True" TickFrequency="50"/>
+                            <Slider Name="SizeSlider" Minimum="100" Maximum="1000" 
+                                    Thumb.DragStarted="Slider_DragStarted" 
+                                    Thumb.DragCompleted="SizeSlider_DragCompleted"
+                                    IsSnapToTickEnabled="True" TickFrequency="50" SmallChange="50" LargeChange="100"/>
                             
                             <CheckBox Name="AspectRatioCheck" Content="En-Boy Oranını Koru / Lock Aspect Ratio" Margin="0,10,0,0" Checked="AspectRatioCheck_Changed" Unchecked="AspectRatioCheck_Changed"/>
                         </StackPanel>
@@ -69,7 +75,10 @@
                         <StackPanel Margin="5">
                             <CheckBox Name="MuteCheck" Content="Sesi Kapat / Mute" Margin="0,5" Checked="MuteCheck_Changed" Unchecked="MuteCheck_Changed"/>
                             <TextBlock Text="Ses Seviyesi / Volume" Margin="0,5,0,2"/>
-                            <Slider Name="VolumeSlider" Minimum="0" Maximum="1.0" ValueChanged="VolumeSlider_ValueChanged" IsSnapToTickEnabled="True" TickFrequency="0.1"/>
+                            <Slider Name="VolumeSlider" Minimum="0" Maximum="1.0" 
+                                    Thumb.DragStarted="Slider_DragStarted" 
+                                    Thumb.DragCompleted="VolumeSlider_DragCompleted"
+                                    IsSnapToTickEnabled="True" TickFrequency="0.1" SmallChange="0.1" LargeChange="0.1"/>
                         </StackPanel>
                     </GroupBox>
 

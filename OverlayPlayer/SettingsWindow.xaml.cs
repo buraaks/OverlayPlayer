@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using OverlayPlayer.Helpers;
 using OverlayPlayer.Models;
 using MessageBox = System.Windows.MessageBox;
@@ -120,17 +121,23 @@ namespace OverlayPlayer
             }
         }
 
-        private void OpacitySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        // Slider sürükleme başladığında çağrılır - opsiyonel, önizleme için kullanılabilir
+        private void Slider_DragStarted(object sender, DragStartedEventArgs e)
+        {
+            // İsteğe bağlı: sürükleme başladığında bir şey yapılabilir
+        }
+
+        private void OpacitySlider_DragCompleted(object sender, DragCompletedEventArgs e)
         {
             if (_isInitializing) return;
-            _settings.Opacity = e.NewValue;
+            _settings.Opacity = OpacitySlider.Value;
             SaveAndApply();
         }
 
-        private void SizeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void SizeSlider_DragCompleted(object sender, DragCompletedEventArgs e)
         {
             if (_isInitializing) return;
-            _settings.WindowSize = e.NewValue;
+            _settings.WindowSize = SizeSlider.Value;
             SaveAndApply();
         }
 
@@ -161,10 +168,10 @@ namespace OverlayPlayer
             SaveAndApply();
         }
 
-        private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void VolumeSlider_DragCompleted(object sender, DragCompletedEventArgs e)
         {
             if (_isInitializing) return;
-            _settings.Volume = e.NewValue;
+            _settings.Volume = VolumeSlider.Value;
             SaveAndApply();
         }
 
