@@ -1,9 +1,0 @@
-  Geri y├╝klenecek projeler belirleniyor...
-  C:\Users\burak\OneDrive\Desktop\Burak\OverlayPlayer\OverlayPlayer\OverlayPlayer.csproj geri y├╝klendi (185 ms i├ğinde).
-  OverlayPlayer -> C:\Users\burak\OneDrive\Desktop\Burak\OverlayPlayer\OverlayPlayer\bin\Debug\net8.0-windows\OverlayPlayer.dll
-
-Olu┼şturma ba┼şar─▒l─▒ oldu.
-    0 Uyar─▒
-    0 Hata
-
-Ge├ğen S├╝re 00:00:02.07

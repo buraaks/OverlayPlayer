@@ -4,7 +4,7 @@
 [Setup]
 AppId={{D3B3A5E1-C8A4-4B9E-B3D9-9F8A7E6D5C4B}
 AppName=Overlay Player
-AppVersion=2.1.0
+AppVersion=2.2.0
 AppPublisher=Burak
 AppPublisherURL=https://github.com/buraaks/OverlayPlayer
 AppSupportURL=https://github.com/buraaks/OverlayPlayer
@@ -38,7 +38,6 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 ; Yayınladığımız tek EXE dosyasını kaynak olarak alıyoruz
 Source: ".\Publish\OverlayPlayer.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: ".\Publish\OverlayPlayer.pdb"; DestDir: "{app}"; Flags: ignoreversion; Attribs: hidden
 ; Eğer uygulama ile beraber gelmesi gereken başka klasörler varsa buraya eklenebilir
 
 [Icons]

@@ -27,6 +27,28 @@ namespace OverlayPlayer
             TitleText.Text = LocalizationService.Get("Settings");
             ResetButton.Content = LocalizationService.Get("ResetDefaults");
 
+            // Localize GroupBoxes
+            AppearanceGroup.Header = LocalizationService.Get("Appearance");
+            InteractionGroup.Header = LocalizationService.Get("Interaction");
+            SoundGroup.Header = LocalizationService.Get("Sound");
+            LayersGroup.Header = LocalizationService.Get("Layers");
+            GiphyGroup.Header = LocalizationService.Get("GiphySettings");
+            SlideshowGroup.Header = LocalizationService.Get("Slideshow");
+
+            // Localize Labels
+            OpacityText.Text = LocalizationService.Get("Opacity");
+            SizeText.Text = LocalizationService.Get("Size");
+            AspectRatioCheck.Content = LocalizationService.Get("LockAspectRatio");
+            InteractiveCheck.Content = LocalizationService.Get("Unlock");
+            AutoStartCheck.Content = LocalizationService.Get("RunAtStartup");
+            MuteCheck.Content = LocalizationService.Get("Mute");
+            VolumeText.Text = LocalizationService.Get("Volume");
+            TopmostRadio.Content = LocalizationService.Get("Topmost");
+            WallpaperRadio.Content = LocalizationService.Get("WallpaperMode");
+            GiphyApiKeyText.Text = LocalizationService.Get("GiphyApiKey");
+            SlideshowCheck.Content = LocalizationService.Get("Slideshow");
+            IntervalText.Text = LocalizationService.Get("Interval");
+
             // Lang
             foreach (ComboBoxItem item in LangCombo.Items)
             {
@@ -54,6 +76,8 @@ namespace OverlayPlayer
             if (_settings.ShowOnTop) TopmostRadio.IsChecked = true;
             else if (_settings.IsWallpaperMode) WallpaperRadio.IsChecked = true;
             else NormalRadio.IsChecked = true;
+
+            GiphyApiKeyBox.Password = _settings.GiphyApiKey;
 
             SlideshowCheck.IsChecked = _settings.IsSlideshowEnabled;
             foreach (ComboBoxItem item in IntervalCombo.Items)
@@ -199,6 +223,26 @@ namespace OverlayPlayer
                 _settings.SlideshowIntervalSeconds = seconds;
                 SaveAndApply();
             }
+        }
+
+        private void GiphyApiKeyBox_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializing) return;
+            _settings.GiphyApiKey = GiphyApiKeyBox.Password;
+            SaveAndApply();
+        }
+
+        private void GiphyLink_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "https://developers.giphy.com/",
+                    UseShellExecute = true
+                });
+            }
+            catch { }
         }
     }
 }

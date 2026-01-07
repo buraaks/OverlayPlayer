@@ -44,37 +44,37 @@
                     </GroupBox>
 
                     <!-- Appearance -->
-                    <GroupBox Header="Görünüm / Appearance" Margin="0,5">
+                    <GroupBox Name="AppearanceGroup" Header="Görünüm" Margin="0,5">
                         <StackPanel Margin="5">
-                            <TextBlock Text="Saydamlık / Opacity" Margin="0,5,0,2"/>
+                            <TextBlock Name="OpacityText" Text="Saydamlık" Margin="0,5,0,2"/>
                             <Slider Name="OpacitySlider" Minimum="0.1" Maximum="1.0" 
                                     Thumb.DragStarted="Slider_DragStarted" 
                                     Thumb.DragCompleted="OpacitySlider_DragCompleted"
                                     IsSnapToTickEnabled="True" TickFrequency="0.1" SmallChange="0.1" LargeChange="0.1"/>
                             
-                            <TextBlock Text="Boyut / Size" Margin="0,10,0,2"/>
+                            <TextBlock Name="SizeText" Text="Boyut" Margin="0,10,0,2"/>
                             <Slider Name="SizeSlider" Minimum="100" Maximum="1000" 
                                     Thumb.DragStarted="Slider_DragStarted" 
                                     Thumb.DragCompleted="SizeSlider_DragCompleted"
                                     IsSnapToTickEnabled="True" TickFrequency="50" SmallChange="50" LargeChange="100"/>
                             
-                            <CheckBox Name="AspectRatioCheck" Content="En-Boy Oranını Koru / Lock Aspect Ratio" Margin="0,10,0,0" Checked="AspectRatioCheck_Changed" Unchecked="AspectRatioCheck_Changed"/>
+                            <CheckBox Name="AspectRatioCheck" Content="En-Boy Oranını Koru" Margin="0,10,0,0" Checked="AspectRatioCheck_Changed" Unchecked="AspectRatioCheck_Changed"/>
                         </StackPanel>
                     </GroupBox>
 
                     <!-- Interaction -->
-                    <GroupBox Header="Etkileşim / Interaction" Margin="0,5">
+                    <GroupBox Name="InteractionGroup" Header="Etkileşim" Margin="0,5">
                         <StackPanel Margin="5">
-                            <CheckBox Name="InteractiveCheck" Content="Konumu Değiştir / Unlock Position" Margin="0,5" Checked="InteractiveCheck_Changed" Unchecked="InteractiveCheck_Changed"/>
-                            <CheckBox Name="AutoStartCheck" Content="Başlangıçta Çalıştır / Run at Startup" Margin="0,5" Checked="AutoStartCheck_Changed" Unchecked="AutoStartCheck_Changed"/>
+                            <CheckBox Name="InteractiveCheck" Content="Konumu Değiştir" Margin="0,5" Checked="InteractiveCheck_Changed" Unchecked="InteractiveCheck_Changed"/>
+                            <CheckBox Name="AutoStartCheck" Content="Başlangıçta Çalıştır" Margin="0,5" Checked="AutoStartCheck_Changed" Unchecked="AutoStartCheck_Changed"/>
                         </StackPanel>
                     </GroupBox>
 
                     <!-- Sound -->
-                    <GroupBox Header="Ses / Sound" Margin="0,5">
+                    <GroupBox Name="SoundGroup" Header="Ses" Margin="0,5">
                         <StackPanel Margin="5">
-                            <CheckBox Name="MuteCheck" Content="Sesi Kapat / Mute" Margin="0,5" Checked="MuteCheck_Changed" Unchecked="MuteCheck_Changed"/>
-                            <TextBlock Text="Ses Seviyesi / Volume" Margin="0,5,0,2"/>
+                            <CheckBox Name="MuteCheck" Content="Sesi Kapat" Margin="0,5" Checked="MuteCheck_Changed" Unchecked="MuteCheck_Changed"/>
+                            <TextBlock Name="VolumeText" Text="Ses Seviyesi" Margin="0,5,0,2"/>
                             <Slider Name="VolumeSlider" Minimum="0" Maximum="1.0" 
                                     Thumb.DragStarted="Slider_DragStarted" 
                                     Thumb.DragCompleted="VolumeSlider_DragCompleted"
@@ -83,19 +83,28 @@
                     </GroupBox>
 
                     <!-- Z-Order -->
-                    <GroupBox Header="Katman / Layers" Margin="0,5">
+                    <GroupBox Name="LayersGroup" Header="Katman" Margin="0,5">
                         <StackPanel Margin="5">
-                            <RadioButton Name="TopmostRadio" Content="Her Zaman Üstte / Always on Top" GroupName="ZOrder" Checked="ZOrder_Changed"/>
-                            <RadioButton Name="WallpaperRadio" Content="Arka Plan Modu / Wallpaper Mode" GroupName="ZOrder" Checked="ZOrder_Changed"/>
+                            <RadioButton Name="TopmostRadio" Content="Her Zaman Üstte" GroupName="ZOrder" Checked="ZOrder_Changed"/>
+                            <RadioButton Name="WallpaperRadio" Content="Arka Plan Modu" GroupName="ZOrder" Checked="ZOrder_Changed"/>
                             <RadioButton Name="NormalRadio" Content="Normal" GroupName="ZOrder" Checked="ZOrder_Changed"/>
                         </StackPanel>
                     </GroupBox>
 
-                    <!-- Slideshow -->
-                    <GroupBox Header="Slayt Gösterisi / Slideshow" Margin="0,5">
+                    <!-- Giphy Settings -->
+                    <GroupBox Name="GiphyGroup" Header="Giphy Ayarları / Giphy Settings" Margin="0,5">
                         <StackPanel Margin="5">
-                            <CheckBox Name="SlideshowCheck" Content="Slayt Gösterisini Etkinleştir / Enable Slideshow" Margin="0,5" Checked="SlideshowCheck_Changed" Unchecked="SlideshowCheck_Changed"/>
-                            <TextBlock Text="Geçiş Süresi (Saniye) / Interval (Seconds)" Margin="0,5,0,2"/>
+                            <TextBlock Name="GiphyApiKeyText" Text="Giphy API Anahtarı" Margin="0,5,0,2"/>
+                            <PasswordBox Name="GiphyApiKeyBox" PasswordChanged="GiphyApiKeyBox_PasswordChanged" Margin="0,0,0,5" Padding="5"/>
+                            <TextBlock Name="GiphyLinkText" Text="https://developers.giphy.com/" Foreground="#007AFF" FontSize="10" Cursor="Hand" MouseLeftButtonUp="GiphyLink_Click"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <!-- Slideshow -->
+                    <GroupBox Name="SlideshowGroup" Header="Slayt Gösterisi" Margin="0,5">
+                        <StackPanel Margin="5">
+                            <CheckBox Name="SlideshowCheck" Content="Slayt Gösterisini Etkinleştir" Margin="0,5" Checked="SlideshowCheck_Changed" Unchecked="SlideshowCheck_Changed"/>
+                            <TextBlock Name="IntervalText" Text="Geçiş Süresi (Saniye)" Margin="0,5,0,2"/>
                             <ComboBox Name="IntervalCombo" SelectionChanged="IntervalCombo_SelectionChanged" Margin="5">
                                 <ComboBoxItem Content="5" Tag="5"/>
                                 <ComboBoxItem Content="10" Tag="10"/>
@@ -117,7 +126,7 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 
-                <TextBlock Grid.Column="0" Text="v1.3.0" Foreground="#999999" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="0" Text="v2.2.0" Foreground="#999999" VerticalAlignment="Center"/>
 
                 <Button Name="ResetButton" Grid.Column="1" Content="Varsayılana Sıfırla / Reset Defaults" Click="Reset_Click" 
                         HorizontalAlignment="Right" Padding="15,10" Background="Transparent" Foreground="#FF3B30" 

@@ -78,12 +78,12 @@ namespace OverlayPlayer
                 {
                     if (key != null)
                     {
-                        var lang = key.GetValue("Language")?.ToString();
+                        var lang = key.GetValue("Language")?.ToString()?.ToLower();
                         if (!string.IsNullOrEmpty(lang))
                         {
                             _settings.Language = lang switch
                             {
-                                "Turkish" => "tr",
+                                "turkish" => "tr",
                                 _ => "en"
                             };
                             _settings.Save();
@@ -253,7 +253,7 @@ namespace OverlayPlayer
 
             contextMenu.Items.Add(new ToolStripSeparator());
 
-            _stopStartMenuItem = new ToolStripMenuItem(_settings.Language == "tr" ? "Durdur" : "Stop", null, OnStopStartClicked);
+            _stopStartMenuItem = new ToolStripMenuItem(LocalizationService.Get("Stop"), null, OnStopStartClicked);
             contextMenu.Items.Add(_stopStartMenuItem);
 
             contextMenu.Items.Add(LocalizationService.Get("Exit"), null, (s, e) => ExitApplication());

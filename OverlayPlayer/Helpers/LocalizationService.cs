@@ -47,7 +47,13 @@ namespace OverlayPlayer.Helpers
                 ["Search"] = "Search",
                 ["Trending"] = "Trending",
                 ["NoResults"] = "No results found.",
-                ["Downloading"] = "Downloading..."
+                ["Downloading"] = "Downloading...",
+                ["Stickers"] = "Stickers",
+                ["Appearance"] = "Appearance",
+                ["Interaction"] = "Interaction",
+                ["Sound"] = "Sound",
+                ["Layers"] = "Layers",
+                ["GiphySettings"] = "Giphy Settings"
             },
             ["tr"] = new()
             {
@@ -88,7 +94,13 @@ namespace OverlayPlayer.Helpers
                 ["Search"] = "Ara",
                 ["Trending"] = "Trendler",
                 ["NoResults"] = "Sonuç bulunamadı.",
-                ["Downloading"] = "İndiriliyor..."
+                ["Downloading"] = "İndiriliyor...",
+                ["Stickers"] = "Çıkartmalar",
+                ["Appearance"] = "Görünüm",
+                ["Interaction"] = "Etkileşim",
+                ["Sound"] = "Ses",
+                ["Layers"] = "Katmanlar",
+                ["GiphySettings"] = "Giphy Ayarları"
             }
         };
 

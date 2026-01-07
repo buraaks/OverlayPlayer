@@ -58,6 +58,7 @@ namespace OverlayPlayer
             TitleText.Text = LocalizationService.Get("SearchGiphy");
             SearchBox.Tag = LocalizationService.Get("Search"); // For placeholder behavior if we implemented it
             SearchButton.Content = LocalizationService.Get("Search");
+            StickerCheckBox.Content = LocalizationService.Get("Stickers");
         }
 
         private async void LoadTrending()

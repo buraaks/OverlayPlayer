@@ -92,16 +92,22 @@ namespace OverlayPlayer.Helpers
             IntPtr foreground = GetForegroundWindow();
             if (foreground == IntPtr.Zero) return false;
             
-            // Check if foreground window is a fullscreen application
-            RECT rect;
-            if (GetWindowRect(foreground, out rect))
+            // Get the monitor where the foreground window is
+            IntPtr hMonitor = MonitorFromWindow(foreground, MONITOR_DEFAULTTONEAREST);
+            MONITORINFO mi = new MONITORINFO();
+            mi.cbSize = Marshal.SizeOf(typeof(MONITORINFO));
+
+            if (GetMonitorInfo(hMonitor, ref mi))
             {
-                int screenWidth = (int)System.Windows.SystemParameters.PrimaryScreenWidth;
-                int screenHeight = (int)System.Windows.SystemParameters.PrimaryScreenHeight;
-                
-                // If window covers entire screen, it's likely fullscreen
-                return rect.Left <= 0 && rect.Top <= 0 && 
-                       rect.Right >= screenWidth && rect.Bottom >= screenHeight;
+                RECT windowRect;
+                if (GetWindowRect(foreground, out windowRect))
+                {
+                    // Check if the window covers the entire monitor area
+                    return windowRect.Left <= mi.rcMonitor.Left &&
+                           windowRect.Top <= mi.rcMonitor.Top &&
+                           windowRect.Right >= mi.rcMonitor.Right &&
+                           windowRect.Bottom >= mi.rcMonitor.Bottom;
+                }
             }
             return false;
         }
@@ -118,6 +124,23 @@ namespace OverlayPlayer.Helpers
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+        private const uint MONITOR_DEFAULTTONEAREST = 2;
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MONITORINFO
+        {
+            public int cbSize;
+            public RECT rcMonitor;
+            public RECT rcWork;
+            public uint dwFlags;
+        }
+
+        [DllImport("user32.dll")]
+        private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
 
         public static void SetAutoStart(bool enable)
         {
