@@ -3,6 +3,9 @@ using System.IO;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
+using System.Collections.Generic;
+using System.Linq;
 using OverlayPlayer.Helpers;
 using OverlayPlayer.Models;
 using Application = System.Windows.Application;
@@ -18,8 +21,12 @@ namespace OverlayPlayer
         private HotkeyHelper? _hotkeyHelper;
         private System.Windows.Threading.DispatcherTimer? _slideshowTimer;
         private System.Windows.Threading.DispatcherTimer? _topmostWatchdogTimer;
+        private System.Drawing.Icon? _cachedTrayIcon;
         private double _originalWidth = 300;
         private double _originalHeight = 300;
+        private string? _lastMediaFolder;
+        private List<string>? _cachedFiles;
+        private IntPtr _lastForegroundWindow = IntPtr.Zero;
 
         public MainWindow()
         {
@@ -40,18 +47,18 @@ namespace OverlayPlayer
                 };
 
                 _topmostWatchdogTimer = new System.Windows.Threading.DispatcherTimer();
-                // Daha hızlı interval - oyunlar için agresif topmost
-                _topmostWatchdogTimer.Interval = TimeSpan.FromMilliseconds(250);
+                _topmostWatchdogTimer.Interval = TimeSpan.FromMilliseconds(500); // 250ms -> 500ms for balance
                 _topmostWatchdogTimer.Tick += (s, e) => {
                     if (_settings.ShowOnTop && this.Visibility == Visibility.Visible)
                     {
-                        // Topmost'u sürekli zorla
+                        var currentForeground = WindowHelper.GetForegroundWindow();
+                        if (currentForeground == _lastForegroundWindow) return;
+                        _lastForegroundWindow = currentForeground;
+
                         ApplyZOrder();
                         
-                        // Tam ekran uygulama algılandığında ekstra zorla
                         if (WindowHelper.IsOtherWindowFullscreen())
                         {
-                            // Pencere stillerini yeniden uygula
                             var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
                             if (hwnd != IntPtr.Zero)
                             {
@@ -211,7 +218,8 @@ namespace OverlayPlayer
                 // Set the icon
                 if (appIcon != null)
                 {
-                    _notifyIcon.Icon = appIcon!;
+                    _cachedTrayIcon = appIcon;
+                    _notifyIcon.Icon = _cachedTrayIcon;
                 }
                 else
                 {
@@ -277,7 +285,6 @@ namespace OverlayPlayer
             else { this.Show(); _stopStartMenuItem.Text = LocalizationService.Get("Stop"); }
         }
 
-        private void ExitApplication() { _hotkeyHelper?.Dispose(); _notifyIcon.Dispose(); _slideshowTimer?.Stop(); Application.Current.Shutdown(); }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
@@ -292,7 +299,11 @@ namespace OverlayPlayer
             _hotkeyHelper = new HotkeyHelper(this);
             _hotkeyHelper.HotkeyPressed += () => OnStopStartClicked(null, EventArgs.Empty);
             if (!string.IsNullOrEmpty(_settings.LastFilePath) && File.Exists(_settings.LastFilePath)) LoadMedia(_settings.LastFilePath);
-            else { await System.Threading.Tasks.Task.Delay(100); SelectAndLoadFile(); }
+            else 
+            { 
+                await System.Threading.Tasks.Task.Delay(100); 
+                if (this.IsVisible) SelectAndLoadFile(); 
+            }
         }
 
         private void PositionWindow()
@@ -300,20 +311,43 @@ namespace OverlayPlayer
             // Kaydedilmiş konum varsa onu kullan
             if (_settings.WindowLeft.HasValue && _settings.WindowTop.HasValue)
             {
-                this.Left = _settings.WindowLeft.Value;
-                this.Top = _settings.WindowTop.Value;
+                double left = _settings.WindowLeft.Value;
+                double top = _settings.WindowTop.Value;
+
+                // Basic safety: Ensure window is not completely off-screen
+                // VirtualScreen covers all monitors
+                if (left < SystemParameters.VirtualScreenLeft - this.Width + 50 || 
+                    left > SystemParameters.VirtualScreenLeft + SystemParameters.VirtualScreenWidth - 50 ||
+                    top < SystemParameters.VirtualScreenTop - 50 ||
+                    top > SystemParameters.VirtualScreenTop + SystemParameters.VirtualScreenHeight - 50)
+                {
+                    SetDefaultPosition();
+                }
+                else
+                {
+                    this.Left = left;
+                    this.Top = top;
+                }
             }
             else
             {
-                // Varsayılan konum: sol alt köşe
-                var workingArea = SystemParameters.WorkArea;
-                this.Left = 0;
-                this.Top = workingArea.Height - this.Height;
+                SetDefaultPosition();
             }
+        }
+
+        private void SetDefaultPosition()
+        {
+            var workingArea = SystemParameters.WorkArea;
+            this.Left = 0;
+            this.Top = workingArea.Height - this.Height;
         }
 
         private void UpdateWindowSize()
         {
+            // Safety: Ensure WindowSize is within reasonable bounds
+            if (_settings.WindowSize < 50) _settings.WindowSize = 50;
+            if (_settings.WindowSize > 4000) _settings.WindowSize = 4000;
+
             if (_settings.LockAspectRatio && _originalWidth > 0 && _originalHeight > 0)
             {
                 double ratio = _originalWidth / _originalHeight;
@@ -372,7 +406,14 @@ namespace OverlayPlayer
                 if (extension == ".gif")
                 {
                     MainVideo.Visibility = Visibility.Collapsed; MainGif.Visibility = Visibility.Visible;
-                    var image = new System.Windows.Media.Imaging.BitmapImage(new Uri(path));
+                    var image = new BitmapImage();
+                    image.BeginInit();
+                    image.UriSource = new Uri(path);
+                    // Decode at window size to save memory
+                    image.DecodePixelWidth = (int)_settings.WindowSize;
+                    image.CacheOption = BitmapCacheOption.OnLoad;
+                    image.EndInit();
+                    
                     _originalWidth = image.PixelWidth; _originalHeight = image.PixelHeight;
                     WpfAnimatedGif.ImageBehavior.SetAnimatedSource(MainGif, image);
                     UpdateWindowSize();
@@ -381,7 +422,15 @@ namespace OverlayPlayer
                 {
                     MainVideo.Visibility = Visibility.Collapsed; MainGif.Visibility = Visibility.Visible;
                     WpfAnimatedGif.ImageBehavior.SetAnimatedSource(MainGif, null);
-                    var image = new System.Windows.Media.Imaging.BitmapImage(new Uri(path));
+                    
+                    var image = new BitmapImage();
+                    image.BeginInit();
+                    image.UriSource = new Uri(path);
+                    // Decode at window size to save memory
+                    image.DecodePixelWidth = (int)_settings.WindowSize;
+                    image.CacheOption = BitmapCacheOption.OnLoad;
+                    image.EndInit();
+                    
                     _originalWidth = image.PixelWidth; _originalHeight = image.PixelHeight;
                     MainGif.Source = image;
                     UpdateWindowSize();
@@ -405,7 +454,7 @@ namespace OverlayPlayer
             }
             _slideshowTimer.Interval = TimeSpan.FromSeconds(_settings.SlideshowIntervalSeconds);
             if (enable) _slideshowTimer.Start();
-            else _slideshowTimer.Stop();
+            else { _slideshowTimer.Stop(); _cachedFiles = null; _lastMediaFolder = null; }
         }
 
         private void PlayNextInFolder()
@@ -415,20 +464,28 @@ namespace OverlayPlayer
                 if (string.IsNullOrEmpty(_settings.LastFilePath)) return;
                 string? folder = Path.GetDirectoryName(_settings.LastFilePath);
                 if (string.IsNullOrEmpty(folder)) return;
-                string[] extensions = { ".mp4", ".gif", ".png", ".jpg", ".jpeg", ".bmp", ".avi", ".mov", ".wmv" };
-                var files = Directory.GetFiles(folder).Where(f => extensions.Contains(Path.GetExtension(f).ToLower())).OrderBy(f => f).ToList();
-                if (files == null || files.Count <= 1) return;
+
+                // Cache file list to avoid frequent disk IO
+                if (_lastMediaFolder != folder || _cachedFiles == null)
+                {
+                    string[] extensions = { ".mp4", ".gif", ".png", ".jpg", ".jpeg", ".bmp", ".avi", ".mov", ".wmv" };
+                    _cachedFiles = Directory.GetFiles(folder)
+                        .Where(f => extensions.Contains(Path.GetExtension(f).ToLower()))
+                        .OrderBy(f => f)
+                        .ToList();
+                    _lastMediaFolder = folder;
+                }
+
+                if (_cachedFiles == null || _cachedFiles.Count <= 1) return;
                 
-                int currentIndex = files.IndexOf(_settings.LastFilePath);
-                // If current file not found in list, start from beginning
+                int currentIndex = _cachedFiles.IndexOf(_settings.LastFilePath);
                 if (currentIndex < 0) currentIndex = -1;
                 
-                int nextIndex = (currentIndex + 1) % files.Count;
+                int nextIndex = (currentIndex + 1) % _cachedFiles.Count;
                 
-                // Validate index before accessing
-                if (nextIndex >= 0 && nextIndex < files.Count)
+                if (nextIndex >= 0 && nextIndex < _cachedFiles.Count)
                 {
-                    LoadMediaWithPersistence(files[nextIndex]);
+                    LoadMediaWithPersistence(_cachedFiles[nextIndex]);
                 }
             } 
             catch (Exception ex)
@@ -438,6 +495,20 @@ namespace OverlayPlayer
         }
 
         private void MainVideo_MediaEnded(object sender, RoutedEventArgs e) { MainVideo.Position = TimeSpan.Zero; MainVideo.Play(); }
+
+        private void ExitApplication() 
+        { 
+            try
+            {
+                _hotkeyHelper?.Dispose(); 
+                _cachedTrayIcon?.Dispose();
+                _notifyIcon?.Dispose(); 
+                _slideshowTimer?.Stop(); 
+                _topmostWatchdogTimer?.Stop();
+                _settings?.Save(); // Guaranteed final save
+            }
+            catch { }
+            Application.Current.Shutdown(); 
+        }
     }
 }
-

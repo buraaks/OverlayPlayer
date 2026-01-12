@@ -148,59 +148,24 @@ namespace OverlayPlayer
                     return;
                 }
 
-                // Safely clear children - use a more defensive approach
-                try
-                {
-                    // Create a list of children to remove to avoid modification during iteration
-                    var childrenToRemove = new System.Collections.Generic.List<UIElement>();
-                    foreach (UIElement child in ResultsPanel.Children)
-                    {
-                        childrenToRemove.Add(child);
-                    }
-                    
-                    foreach (var child in childrenToRemove)
-                    {
-                        try
-                        {
-                            ResultsPanel.Children.Remove(child);
-                        }
-                        catch { }
-                    }
-                }
-                catch (Exception clearEx)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error clearing ResultsPanel: {clearEx.GetType().Name} - {clearEx.Message}");
-                    // If all else fails, just continue - old items will be replaced
-                }
+                // Safely clear children efficiently
+                ResultsPanel.Children.Clear();
 
                 if (response == null || response.Data == null) return;
 
-                // Get data list safely - create a copy to avoid collection modification issues
-                var dataList = response.Data.ToList(); // Create a copy
-                if (dataList == null || dataList.Count == 0) return;
-
                 // Limit the number of items to prevent memory issues
-                int maxItems = Math.Min(dataList.Count, 50);
-                
-                // Use foreach for safer iteration, but limit the count
-                int processedCount = 0;
+                var dataList = response.Data.Take(50).ToList();
+                if (dataList.Count == 0) return;
+
                 foreach (var item in dataList)
                 {
-                    if (processedCount >= maxItems) break;
-                    processedCount++;
-                    
-                    // Null-safe checks for Images and its properties
                     if (item?.Images == null) continue;
 
-                    string? url = item.Images.FixedHeight?.Url;
-                    // Using FixedHeight for better grid layout, fallback to Original if empty
-                    if (string.IsNullOrEmpty(url)) 
-                    {
-                        url = item.Images.Original?.Url;
-                    }
+                    string? previewUrl = item.Images.Downsized?.Url ?? 
+                                       item.Images.FixedHeight?.Url ?? 
+                                       item.Images.Original?.Url;
 
-                    // Skip if no valid URL found
-                    if (string.IsNullOrEmpty(url)) continue;
+                    if (string.IsNullOrEmpty(previewUrl)) continue;
 
                     try
                     {
@@ -221,75 +186,31 @@ namespace OverlayPlayer
                             Visibility = Visibility.Visible
                         };
 
-                        // Use the preview URL or downsized for faster loading in the grid
-                        var previewUrl = item.Images.Downsized?.Url;
-                        if (string.IsNullOrEmpty(previewUrl))
+                        try
                         {
-                            // Fallback: try to load from FixedHeight or Original URL
-                            previewUrl = item.Images.FixedHeight?.Url ?? item.Images.Original?.Url;
+                            var bitmapImage = new BitmapImage();
+                            bitmapImage.BeginInit();
+                            bitmapImage.UriSource = new Uri(previewUrl);
+                            // Optimization: Decode at thumbnail size to save massive amounts of RAM
+                            bitmapImage.DecodePixelWidth = 150;
+                            bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                            bitmapImage.EndInit();
+                            
+                            image.Source = bitmapImage;
                         }
-
-                        if (!string.IsNullOrEmpty(previewUrl))
+                        catch (Exception ex)
                         {
-                            // Load image directly without WpfAnimatedGif to avoid index errors
-                            // This will show static previews, but avoids the index exception
-                            try
-                            {
-                                var bitmapImage = new BitmapImage();
-                                bitmapImage.BeginInit();
-                                bitmapImage.UriSource = new Uri(previewUrl);
-                                bitmapImage.CacheOption = BitmapCacheOption.OnDemand;
-                                bitmapImage.EndInit();
-                                
-                                // Use regular Image.Source instead of WpfAnimatedGif to avoid index errors
-                                image.Source = bitmapImage;
-                                
-                                // Note: GIFs won't animate in preview, but they will work when selected
-                            }
-                            catch (UriFormatException ex)
-                            {
-                                System.Diagnostics.Debug.WriteLine($"Invalid image URL: {previewUrl}, Error: {ex.Message}");
-                            }
-                            catch (System.Net.WebException ex)
-                            {
-                                System.Diagnostics.Debug.WriteLine($"Network error loading image: {previewUrl}, Error: {ex.Message}");
-                            }
-                            catch (ArgumentOutOfRangeException ex)
-                            {
-                                System.Diagnostics.Debug.WriteLine($"Index error loading image: {previewUrl}, Error: {ex.Message}");
-                            }
-                            catch (Exception ex)
-                            {
-                                System.Diagnostics.Debug.WriteLine($"Failed to load image: {previewUrl}, Error: {ex.Message}, Type: {ex.GetType().Name}");
-                            }
+                            System.Diagnostics.Debug.WriteLine($"Failed to load image: {previewUrl}, Error: {ex.Message}");
                         }
 
                         border.Child = image;
                         border.MouseLeftButtonUp += (s, e) => OnGifSelected(item);
 
-                        // Safely add to panel
-                        try
-                        {
-                            ResultsPanel.Children.Add(border);
-                        }
-                        catch (ArgumentOutOfRangeException ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"Index error adding border to panel: {ex.Message}");
-                            // Skip this item if we can't add it
-                            continue;
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"Error adding border to panel: {ex.Message}");
-                            // Skip this item if we can't add it
-                            continue;
-                        }
+                        ResultsPanel.Children.Add(border);
                     }
                     catch (Exception ex)
                     {
-                        // Handle any errors during UI element creation
                         System.Diagnostics.Debug.WriteLine($"Error creating result item: {ex.Message}");
-                        continue;
                     }
                 }
             }

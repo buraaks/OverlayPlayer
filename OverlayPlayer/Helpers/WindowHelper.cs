@@ -39,7 +39,7 @@ namespace OverlayPlayer.Helpers
         private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
         [DllImport("user32.dll")]
-        private static extern IntPtr GetForegroundWindow();
+        public static extern IntPtr GetForegroundWindow();
 
         [DllImport("user32.dll")]
         private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);

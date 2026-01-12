@@ -44,18 +44,23 @@ namespace OverlayPlayer.Models
             return new AppSettings();
         }
 
+        private string? _lastSavedJson;
+
         public void Save()
         {
             try
             {
+                string json = JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
+                if (json == _lastSavedJson) return;
+
                 string? directory = Path.GetDirectoryName(SettingsPath);
                 if (directory != null && !Directory.Exists(directory))
                 {
                     Directory.CreateDirectory(directory);
                 }
 
-                string json = JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
                 File.WriteAllText(SettingsPath, json);
+                _lastSavedJson = json;
             }
             catch { }
         }

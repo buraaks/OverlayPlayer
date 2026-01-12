@@ -41,7 +41,7 @@ namespace OverlayPlayer.Services
                 string type = isSticker ? "stickers" : "gifs";
                 string url = $"{BaseUrl}/{type}/search?api_key={apiKey}&q={encodedQuery}&limit={limit}&offset={offset}&rating=g&lang=en";
                 
-                var response = await _httpClient.GetAsync(url);
+                using var response = await _httpClient.GetAsync(url);
                 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -79,7 +79,7 @@ namespace OverlayPlayer.Services
                 string type = isSticker ? "stickers" : "gifs";
                 string url = $"{BaseUrl}/{type}/trending?api_key={apiKey}&limit={limit}&offset={offset}&rating=g";
                 
-                var response = await _httpClient.GetAsync(url);
+                using var response = await _httpClient.GetAsync(url);
                 if (!response.IsSuccessStatusCode) return null;
 
                 string json = await response.Content.ReadAsStringAsync();
@@ -182,7 +182,7 @@ namespace OverlayPlayer.Services
             try
             {
                 string url = $"{BaseUrl}/gifs/trending?api_key={apiKey}&limit=1&rating=g";
-                var response = await _httpClient.GetAsync(url);
+                using var response = await _httpClient.GetAsync(url);
                 
                 if (response.IsSuccessStatusCode)
                 {
